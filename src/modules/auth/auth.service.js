@@ -1,8 +1,11 @@
 const config = require("../../config");
+const { companyName } = require("../../lib/companyName");
 const { createToken } = require("../../utils/tokenGenerate");
 const User = require("../user/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const verificationCodeTemplate = require("../../utils/verificationCodeTemplate");
+const sendEmail = require("../../utils/sendEmail");
 
 const loginUser = async (payload) => {
   const isExistingUser = await User.findOne({
@@ -16,9 +19,6 @@ const loginUser = async (payload) => {
   if (!isExistingUser.isVerified) {
     throw new Error("Please verify your email");
   }
-
-  // console.log("Plain password:", payload.password);
-  // console.log("Hashed password in DB:", isExistingUser.password);
 
   const isPasswordMatched = await bcrypt.compare(
     payload.password,
@@ -59,6 +59,8 @@ const loginUser = async (payload) => {
   };
 };
 
+
+
 const LoginRefreshToken = async (token) => {
   let decodedToken;
 
@@ -94,9 +96,47 @@ const LoginRefreshToken = async (token) => {
   return { accessToken };
 };
 
+
+const forgotPassword = async (email) => {
+  if (!email) throw new Error("Email is required");
+
+  const isExistingUser = await User.findOne({ email });
+  if (!isExistingUser) throw new Error("User not found");
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const hashedOtp = await bcrypt.hash(otp, 10);
+  const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+
+  isExistingUser.otp = hashedOtp;
+  isExistingUser.otpExpires = otpExpires;
+  await isExistingUser.save();
+
+  await sendEmail({
+    to: email,
+    subject: `${companyName} - Password Reset OTP`,
+    html: verificationCodeTemplate(otp),
+  });
+
+  const JwtToken = {
+    userId: isExistingUser._id,
+    email: isExistingUser.email,
+    role: isExistingUser.role,
+  };
+
+  const accessToken = createToken(
+    JwtToken,
+    config.JWT_SECRET,
+    config.JWT_EXPIRES_IN
+  );
+
+  return { accessToken };
+};
+
+
 const authService = {
   loginUser,
   LoginRefreshToken,
+  forgotPassword,
 };
 
 module.exports = authService;

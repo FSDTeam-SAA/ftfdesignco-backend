@@ -28,15 +28,42 @@ const loginUser = async (req, res) => {
   }
 };
 
+
+
 const refreshToken = async (req, res) => {
   try {
-    const { refreshToken } = req.cookies;
-    const result = await authService.LoginRefreshToken(refreshToken);
+    const { refreshToken } = req.cookies; // needs cookie‑parser!
+    if (!refreshToken)
+      return res
+        .status(401)
+        .json({
+          success: false,
+          code: 401,
+          message: "No refresh token provided",
+        });
+
+    const data = await authService.LoginRefreshToken(refreshToken);
+
+    res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Access token refreshed successfully",
+      data,
+    });
+  } catch (err) {
+    res.status(401).json({ success: false, code: 401, message: err.message });
+  }
+};
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const result = await authService.forgotPassword(email);
 
     return res.status(200).json({
       success: true,
       code: 200,
-      message: "User logged in successfully",
+      message: "OTP sent to your email",
       data: result,
     });
   } catch (error) {
@@ -49,6 +76,7 @@ const refreshToken = async (req, res) => {
 const authController = {
   loginUser,
   refreshToken,
+  forgotPassword,
 };
 
 module.exports = authController;
