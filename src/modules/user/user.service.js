@@ -48,10 +48,17 @@ const createNewAccountInDB = async (payload) => {
     email: result.email,
     role: result.role,
   };
+
   const accessToken = createToken(
     JwtToken,
     config.JWT_SECRET,
     config.JWT_EXPIRES_IN
+  );
+
+  const refreshToken = createToken(
+    JwtToken,
+    config.refreshTokenSecret,
+    config.jwtRefreshTokenExpiresIn
   );
 
   return {
@@ -62,6 +69,7 @@ const createNewAccountInDB = async (payload) => {
       role: result.role,
     },
     accessToken,
+    refreshToken,
   };
 };
 
@@ -98,6 +106,35 @@ const verifyUserEmail = async (payload, email) => {
   return result;
 };
 
+const resendOtpCode = async ({ email }) => {
+  const existingUser = await User.findOne({ email });
+  console.log(existingUser);
+  if (!existingUser) throw new Error("User not found");
+
+  if (existingUser.isVerified) {
+    throw new Error("User already verified");
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const hashedOtp = await bcrypt.hash(otp, 10);
+  const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+
+  const result = await User.findOneAndUpdate(
+    { email },
+    {
+      otp: hashedOtp,
+      otpExpires,
+    },
+    { new: true }
+  ).select("-password -otp -otpExpires");
+
+  await sendEmail({
+    to: existingUser.email,
+    subject: "Verify your email",
+    html: verificationCodeTemplate(otp),
+  });
+  return result;
+};
 
 const getAllUsersFromDb = async () => {
   const users = await User.find({ isVerified: true }).select(
@@ -106,14 +143,11 @@ const getAllUsersFromDb = async () => {
   return users;
 };
 
-
-
 const getMyProfileFromDb = async (email) => {
   const user = await User.findOne(email).select("-password -otp -otpExpires");
   if (!user) throw new Error("User not found");
   return user;
 };
-
 
 const updateUserProfile = async (payload, email, file) => {
   const isExistingUser = await User.findOne({ email });
@@ -136,10 +170,10 @@ const updateUserProfile = async (payload, email, file) => {
   return updatedUser;
 };
 
-
 const userService = {
   createNewAccountInDB,
   verifyUserEmail,
+  resendOtpCode,
   getAllUsersFromDb,
   getMyProfileFromDb,
   updateUserProfile,
