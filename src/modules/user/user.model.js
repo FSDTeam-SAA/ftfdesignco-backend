@@ -6,31 +6,32 @@ const userModel = new Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "Name is required"],
     },
     email: {
       type: String,
       required: true,
-      unique: true,
+      unique: [true, "Email is required"],
     },
     password: {
       type: String,
-      required: true,
+      required: [true, "Password is required"],
     },
     phone: {
       type: String,
-      required: true,
+      required: [true, "Phone is required"],
     },
     isVerified: {
       type: Boolean,
       default: false,
     },
+    imageLink: { type: String, default: null },
     otp: { type: String, default: null },
     otpExpires: { type: Date, default: null },
     role: {
       type: String,
-      enum: ["company_admin", "admin", "employes"],
-      default: "employes",
+      enum: ["company_admin", "admin", "employee"],
+      default: "employee",
     },
     shop: {
       type: Schema.Types.ObjectId,
