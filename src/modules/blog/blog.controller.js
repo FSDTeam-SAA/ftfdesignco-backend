@@ -1,4 +1,4 @@
-const blogController = require('./blog.controller');
+const BlogModel= require("./blog.model.js");
 const { sendImageToCloudinary } = require("../../utils/cloudnary");
 
 //------------------------- Blog -------------------------
@@ -26,7 +26,7 @@ exports.createBlog = async (req, res) => {
       const path = file?.path;
       const { secure_url } = await sendImageToCloudinary(imageName, path);
 
-      const blog = new blogController({
+      const blog = new BlogModel({
         blogTitle,
         blogDescription,
         imageLink: secure_url,
@@ -68,13 +68,12 @@ exports.getAllBlog = async (req, res) => {
   }
 
   try {
-    const blog = await blogController
-      .find(filter)
+    const blog = await BlogModel.find(filter)
       .sort(sortBy)
       .skip(skip)
       .limit(limit);
 
-    const totalblog = await blogController.countDocuments(filter);
+    const totalblog = await BlogModel.countDocuments(filter);
     const totalPages = Math.ceil(totalblog / limit);
 
     if (blog.length === 0) {
@@ -112,7 +111,7 @@ exports.getAllBlog = async (req, res) => {
 exports.getSingleBlog = async (req, res) => {
   try {
     const id = req.params.id;
-    const blog = await blogController.findById(id);
+    const blog = await BlogModel.findById(id);
     if (!blog) {
       return res.status(404).json({
         status: false,
@@ -149,7 +148,7 @@ exports.updateBlog = async (req, res) => {
     const id = req.params.id;
     const { blogTitle, blogDescription } = req.body;
 
-    const existingBlog = await blogController.findById(id);
+    const existingBlog = await BlogModel.findById(id);
     if (!existingBlog) {
       return res.status(404).json({
         status: false,
@@ -199,7 +198,7 @@ exports.deleteBlog = async (req, res) => {
       });
     }
     const id = req.params.id;
-    const blog = await blogController.findByIdAndDelete(id);
+    const blog = await BlogModel.findByIdAndDelete(id);
     if (!blog) {
       return res.status(404).json({
         status: false,

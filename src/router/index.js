@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const userRouter = require("../modules/user/user.router");
 const blogRouter = require("../modules/blog/blog.router");
+const categoryRouter = require("../modules/category/category.router");
 
 const router = Router();
 
@@ -10,8 +11,13 @@ const moduleRouter = [
     router: userRouter,
   },
   {
-    path:"/blog",
+    path: "/blog",
     router: blogRouter
+  },
+  //CATEGORY ROUTER
+  {
+    path: "/category",
+    router: categoryRouter
   }
 ];
 
