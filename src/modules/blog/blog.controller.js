@@ -1,5 +1,5 @@
 const blogController = require('./blog.controller');
-const { sendImageToCloudinary } = require("../../utilts/cloudnary");
+const { sendImageToCloudinary } = require("../../utils/cloudnary");
 
 //------------------------- Blog -------------------------
 exports.createBlog = async (req, res) => {
