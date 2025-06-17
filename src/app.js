@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const globalErrorHandler = require("./middleware/globalErrorHandler");
 const notFound = require("./middleware/notFound");
+const router = require("./router");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -16,7 +17,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
-// app.use("/api/v1", router);
+app.use("/api/v1", router);
 
 app.use("/", (req, res) => {
   return res.send("Your server is running!");
