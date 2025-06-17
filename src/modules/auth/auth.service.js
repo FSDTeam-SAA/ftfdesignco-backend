@@ -2,6 +2,7 @@ const config = require("../../config");
 const { createToken } = require("../../utils/tokenGenerate");
 const User = require("../user/user.model");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const loginUser = async (payload) => {
   const isExistingUser = await User.findOne({
@@ -58,8 +59,44 @@ const loginUser = async (payload) => {
   };
 };
 
+const LoginRefreshToken = async (token) => {
+  let decodedToken;
+
+  try {
+    decodedToken = jwt.verify(token, config.refreshTokenSecret);
+
+    if (!decodedToken || !decodedToken.email) {
+      throw new Error("You are not authorized");
+    }
+  } catch (error) {
+    throw new Error("Unauthorized");
+  }
+
+  const email = decodedToken.email;
+  const userData = await User.findOne({ email });
+
+  if (!userData) {
+    throw new Error("User not found");
+  }
+
+  const JwtPayload = {
+    userId: userData._id,
+    role: userData.role,
+    email: userData.email,
+  };
+
+  const accessToken = createToken(
+    JwtPayload,
+    config.JWT_SECRET,
+    config.JWT_EXPIRES_IN
+  );
+
+  return { accessToken };
+};
+
 const authService = {
   loginUser,
+  LoginRefreshToken,
 };
 
 module.exports = authService;
