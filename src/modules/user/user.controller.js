@@ -1,14 +1,26 @@
+const config = require("../../config");
 const userService = require("./user.service");
 
 const createNewAccount = async (req, res) => {
   try {
     const result = await userService.createNewAccountInDB(req.body);
 
+    const { refreshToken, accessToken, user } = result;
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: config.NODE_ENV === "production",
+      sameSite: config.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     return res.status(200).json({
       success: true,
       code: 200,
       message: "User created successfully, please verify your email",
-      data: result,
+      data: {
+        accessToken,
+        user,
+      },
     });
   } catch (error) {
     return res
@@ -24,6 +36,20 @@ const verifyEmail = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Email verified successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+const resendOtpCode = async (req, res) => {
+  try {
+    const result = await userService.resendOtpCode(req.user);
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP resent successfully",
       data: result,
     });
   } catch (error) {
@@ -81,6 +107,7 @@ const updateUserProfile = async (req, res) => {
 const userController = {
   createNewAccount,
   verifyEmail,
+  resendOtpCode,
   getAllUsers,
   getMyProfile,
   updateUserProfile,

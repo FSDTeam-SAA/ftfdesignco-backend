@@ -28,10 +28,10 @@ const loginUser = async (payload) => {
     throw new Error("Invalid password");
   }
 
-    const userObj = isExistingUser.toObject();
-    delete userObj.password;
-    delete userObj.otp;
-    delete userObj.otpExpires;
+  const userObj = isExistingUser.toObject();
+  delete userObj.password;
+  delete userObj.otp;
+  delete userObj.otpExpires;
 
   const JwtToken = {
     userId: isExistingUser._id,
@@ -45,9 +45,16 @@ const loginUser = async (payload) => {
     config.JWT_EXPIRES_IN
   );
 
+  const refreshToken = createToken(
+    JwtToken,
+    config.refreshTokenSecret,
+    config.jwtRefreshTokenExpiresIn
+  );
+
   return {
     accessToken,
     user: userObj,
+    refreshToken,
   };
 };
 

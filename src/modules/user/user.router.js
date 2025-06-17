@@ -13,6 +13,12 @@ router.post(
   userController.verifyEmail
 );
 
+router.post(
+  "/resend-otp",
+  auth(USER_ROLE.employee, USER_ROLE.company_admin, USER_ROLE.admin),
+  userController.resendOtpCode
+);
+
 router.get(
   "/",
   auth(USER_ROLE.employee, USER_ROLE.company_admin, USER_ROLE.admin),
@@ -45,6 +51,6 @@ router.put(
   },
   userController.updateUserProfile
 );
-  
+
 const userRouter = router;
 module.exports = userRouter;
