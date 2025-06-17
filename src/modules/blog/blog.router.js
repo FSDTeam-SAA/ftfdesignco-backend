@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { upload } = require('../../utilts/cloudnary');
+const { upload } = require('../../utils/cloudnary');
 const auth = require("../../middleware/auth");
 const USER_ROLE = require("../user/user.constant");
 const { createBlog, getAllBlog, getSingleBlog, deleteBlog, updateBlog } = require('./blog.controller');
