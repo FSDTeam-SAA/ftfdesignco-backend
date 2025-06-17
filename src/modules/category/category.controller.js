@@ -30,7 +30,7 @@ exports.createCategory = async (req, res) => {
             const path = file?.path;
             const { secure_url } = await sendImageToCloudinary(imageName, path);
 
-            const category = new BlogModel({
+            const category = new CategoryModel({
                 categoryName,
                 imageLink: secure_url,
             });
