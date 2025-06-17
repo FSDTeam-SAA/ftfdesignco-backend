@@ -1,4 +1,6 @@
 const { Schema, model } = require("mongoose");
+const config = require("../../config");
+const bcrypt = require("bcrypt");
 
 const userModel = new Schema(
   {
@@ -15,9 +17,12 @@ const userModel = new Schema(
       type: String,
       required: true,
     },
+    phone: {
+      type: String,
+      required: true,
+    },
     isVerified: {
       type: Boolean,
-      required: true,
       default: false,
     },
     otp: { type: String, default: null },
@@ -38,6 +43,19 @@ const userModel = new Schema(
   },
   { timestamps: true, versionKey: false }
 );
+
+userModel.pre("save", async function (next) {
+  this.password = await bcrypt.hash(
+    this.password,
+    Number(config.bcryptSaltRounds)
+  );
+  next();
+});
+
+userModel.post("save", function (doc, next) {
+  doc.password = "";
+  next();
+});
 
 const User = model("User", userModel);
 module.exports = User;
