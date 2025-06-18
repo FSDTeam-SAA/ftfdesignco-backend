@@ -28,6 +28,8 @@ const userModel = new Schema(
     imageLink: { type: String, default: null },
     otp: { type: String, default: null },
     otpExpires: { type: Date, default: null },
+    resetPasswordOtp: { type: String, default: null },
+    resetPasswordOtpExpires: { type: Date, default: null },
     role: {
       type: String,
       enum: ["company_admin", "admin", "employee"],
@@ -45,13 +47,20 @@ const userModel = new Schema(
   { timestamps: true, versionKey: false }
 );
 
+// userModel.pre("save", async function (next) {
+//   this.password = await bcrypt.hash(
+//     this.password,
+//     Number(config.bcryptSaltRounds)
+//   );
+//   next();
+// });
+
 userModel.pre("save", async function (next) {
-  this.password = await bcrypt.hash(
-    this.password,
-    Number(config.bcryptSaltRounds)
-  );
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
+
 
 userModel.post("save", function (doc, next) {
   doc.password = "";
