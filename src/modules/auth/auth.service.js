@@ -8,58 +8,53 @@ const verificationCodeTemplate = require("../../utils/verificationCodeTemplate")
 const sendEmail = require("../../utils/sendEmail");
 
 const loginUser = async (payload) => {
-  const isExistingUser = await User.findOne({
-    email: payload.email,
-  }).select("+password");
-
-  if (!isExistingUser) {
+  const user = await User.findOne({ email: payload.email }).select("+password");
+  if (!user) {
     throw new Error("User not found");
   }
 
-  if (!isExistingUser.isVerified) {
-    throw new Error("Please verify your email");
+  if (!user.isVerified) {
+    throw new Error("Please verify your email address first");
   }
 
-  const isPasswordMatched = await bcrypt.compare(
-    payload.password,
-    isExistingUser.password
-  );
-
-  if (!isPasswordMatched) {
+  const isPasswordValid = await bcrypt.compare(payload.password, user.password);
+  if (!isPasswordValid) {
     throw new Error("Invalid password");
   }
 
-  const userObj = isExistingUser.toObject();
+  const userObj = user.toObject();
   delete userObj.password;
+  delete userObj.resetPasswordOtp;
+  delete userObj.resetPasswordOtpExpires;
+  delete userObj.verificationOtp;
+  delete userObj.verificationOtpExpires;
   delete userObj.otp;
   delete userObj.otpExpires;
 
-  const JwtToken = {
-    userId: isExistingUser._id,
-    email: isExistingUser.email,
-    role: isExistingUser.role,
+  const tokenPayload = {
+    userId: user._id,
+    email: user.email,
+    role: user.role,
   };
 
   const accessToken = createToken(
-    JwtToken,
+    tokenPayload,
     config.JWT_SECRET,
     config.JWT_EXPIRES_IN
   );
 
   const refreshToken = createToken(
-    JwtToken,
+    tokenPayload,
     config.refreshTokenSecret,
     config.jwtRefreshTokenExpiresIn
   );
 
   return {
     accessToken,
-    user: userObj,
     refreshToken,
+    user: userObj,
   };
 };
-
-
 
 const LoginRefreshToken = async (token) => {
   let decodedToken;
@@ -96,7 +91,6 @@ const LoginRefreshToken = async (token) => {
   return { accessToken };
 };
 
-
 const forgotPassword = async (email) => {
   if (!email) throw new Error("Email is required");
 
@@ -107,8 +101,8 @@ const forgotPassword = async (email) => {
   const hashedOtp = await bcrypt.hash(otp, 10);
   const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
 
-  isExistingUser.otp = hashedOtp;
-  isExistingUser.otpExpires = otpExpires;
+  isExistingUser.resetPasswordOtp = hashedOtp;
+  isExistingUser.resetPasswordOtpExpires = otpExpires;
   await isExistingUser.save();
 
   await sendEmail({
@@ -132,11 +126,115 @@ const forgotPassword = async (email) => {
   return { accessToken };
 };
 
+const verifyToken = async (otp, email) => {
+  if (!otp) throw new Error("OTP are required");
+
+  const isExistingUser = await User.findOne({ email });
+  if (!isExistingUser) throw new Error("User not found");
+
+  if (
+    !isExistingUser.resetPasswordOtp ||
+    !isExistingUser.resetPasswordOtpExpires
+  ) {
+    throw new Error("Password reset OTP not requested or has expired");
+  }
+
+  if (isExistingUser.resetPasswordOtpExpires < new Date()) {
+    throw new Error("Password reset OTP has expired");
+  }
+
+  const isOtpMatched = await bcrypt.compare(
+    otp.toString(),
+    isExistingUser.resetPasswordOtp
+  );
+  if (!isOtpMatched) throw new Error("Invalid OTP ");
+
+  isExistingUser.resetPasswordOtp = undefined;
+  isExistingUser.resetPasswordOtpExpires = undefined;
+  await isExistingUser.save();
+
+  const JwtToken = {
+    userId: isExistingUser._id,
+    email: isExistingUser.email,
+    role: isExistingUser.role,
+  };
+
+  const accessToken = createToken(
+    JwtToken,
+    config.JWT_SECRET,
+    config.JWT_EXPIRES_IN
+  );
+
+  return { accessToken };
+};
+
+const resetPassword = async (payload, email) => {
+  if (!payload.newPassword) {
+    throw new Error("Email and new password are required");
+  }
+
+  const isExistingUser = await User.findOne({ email });
+  if (!isExistingUser) throw new Error("User not found");
+
+  const hashedPassword = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.bcryptSaltRounds)
+  );
+
+  const result = await User.findOneAndUpdate(
+    { email },
+    {
+      password: hashedPassword,
+      otp: undefined,
+      otpExpires: undefined,
+    },
+    { new: true }
+  ).select(
+    "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires"
+  );
+
+  return result;
+};
+
+const changePassword = async (payload, email) => {
+  const { currentPassword, newPassword } = payload;
+  if (!currentPassword || !newPassword) {
+    throw new Error("Current and new passwords are required");
+  }
+  console.log("first", email);
+
+  const isExistingUser = await User.findOne({ email });
+  console.log("first", isExistingUser);
+  if (!isExistingUser) throw new Error("User not found");
+
+  const isPasswordMatched = await bcrypt.compare(
+    currentPassword,
+    isExistingUser.password
+  );
+  if (!isPasswordMatched) throw new Error("Invalid current password");
+
+  const hashedPassword = await bcrypt.hash(
+    newPassword,
+    Number(config.bcryptSaltRounds)
+  );
+
+  const result = await User.findOneAndUpdate(
+    { email },
+    {
+      password: hashedPassword,
+    },
+    { new: true }
+  ).select("-password -otp -otpExpires");
+  return result;
+};
 
 const authService = {
   loginUser,
   LoginRefreshToken,
   forgotPassword,
+  verifyToken,
+  resetPassword,
+  changePassword,
 };
 
 module.exports = authService;
