@@ -51,8 +51,28 @@ const crateShopInDb = async (payload, email, files) => {
   return result;
 };
 
+const toggleShopStatus = async (payload, shopId) => {
+  const shop = await Shop.findById(shopId);
+  if (!shop) throw new Error("Shop not found");
+
+  const allowedStatuses = ["approved", "pending", "rejected"];
+
+  if (!payload.status || !allowedStatuses.includes(payload.status)) {
+    throw new Error("Invalid status. Allowed: approved, pending, rejected.");
+  }
+
+  const result = await Shop.findOneAndUpdate(
+    { _id: shopId },
+    { status: payload.status },
+    { new: true }
+  ).populate("userId");
+
+  return result;
+};
+
 const shopService = {
   crateShopInDb,
+  toggleShopStatus,
 };
 
 module.exports = shopService;
