@@ -201,10 +201,8 @@ const changePassword = async (payload, email) => {
   if (!currentPassword || !newPassword) {
     throw new Error("Current and new passwords are required");
   }
-  console.log("first", email);
 
   const isExistingUser = await User.findOne({ email });
-  console.log("first", isExistingUser);
   if (!isExistingUser) throw new Error("User not found");
 
   const isPasswordMatched = await bcrypt.compare(
@@ -224,7 +222,9 @@ const changePassword = async (payload, email) => {
       password: hashedPassword,
     },
     { new: true }
-  ).select("-password -otp -otpExpires");
+  ).select(
+    "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires"
+  );
   return result;
 };
 
