@@ -30,6 +30,12 @@ router.post(
   shopController.crateShop
 );
 
+router.get(
+  "/:shopId",
+  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  shopController.shopDetails
+);
+
 router.put(
   "/:shopId",
   auth(USER_ROLE.company_admin, USER_ROLE.admin),

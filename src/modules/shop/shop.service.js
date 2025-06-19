@@ -65,14 +65,28 @@ const toggleShopStatus = async (payload, shopId) => {
     { _id: shopId },
     { status: payload.status },
     { new: true }
-  ).populate("userId");
+  ).populate({
+    path: "userId",
+    select:
+      "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
+  });
 
+  return result;
+};
+
+const getShopDetails = async (shopId) => {
+  const result = await Shop.findById(shopId).populate({
+    path: "userId",
+    select:
+      "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
+  });
   return result;
 };
 
 const shopService = {
   crateShopInDb,
   toggleShopStatus,
+  getShopDetails,
 };
 
 module.exports = shopService;
