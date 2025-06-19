@@ -2,45 +2,45 @@ const { Schema, model } = require("mongoose");
 
 const ProductSchema = new Schema(
   {
-    productName: {
+    title: {
       type: String,
-      required: true,
-      unique: true,
-      trim: true,
+      required: [true, "Title is required"],
     },
-    productDescription: {
+    description: {
       type: String,
-      required: true,
-      trim: true,
+      required: [true, "Description is required"],
     },
-    productPrice: {
+    price: {
       type: Number,
-      required: true,
+      required: [true, "Price is required"],
+      min: 0,
+    },
+    quantity: {
+      type: Number,
+      required: [true, "Quantity is required"],
       min: 0,
     },
     productImage: {
       type: String,
-      required: true,
-      trim: true,
     },
     category: {
       type: Schema.Types.ObjectId,
       ref: "Category",
-      required: true,
+      required: [true, "Category is required"],
     },
-    subcategory: {
-      type: String,
-      required: false, // optional, unless you want to enforce subcategory selection
-    },
-    productSize: {
-      type: String,
-      required: false, // optional, unless you want to enforce size selection
-    },
+    // subcategory: {
+    //   type: String,
+    //   required: false,
+    // },
+    // productSize: {
+    //   type: String,
+    //   required: false,
+    // },
   },
   {
     timestamps: true,
   }
 );
 
-const ProductModel = model("Product", ProductSchema);
-module.exports = ProductModel;
+const Product = model("Product", ProductSchema);
+module.exports = Product;
