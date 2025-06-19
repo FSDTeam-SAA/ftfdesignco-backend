@@ -17,15 +17,18 @@ const shopModel = new Schema(
     },
     companyLogo: {
       type: String,
-      // required: true,
     },
     companyBanner: {
       type: String,
-      // required: true,
     },
     comapnyAddress: {
       type: String,
       required: true,
+    },
+    status: {
+      type: String,
+      enum: ["approved", "pending", "rejected"],
+      default: "pending",
     },
   },
   {

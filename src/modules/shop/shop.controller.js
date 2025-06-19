@@ -18,8 +18,27 @@ const crateShop = async (req, res) => {
   }
 };
 
+const toggleShopStatus = async (req, res) => {
+  try {
+    const { shopId } = req.params;
+    const result = await shopService.toggleShopStatus(req.body, shopId);
+
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Shop status updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ success: false, code: 400, message: error.message });
+  }
+};
+
 const shopController = {
   crateShop,
+  toggleShopStatus,
 };
 
 module.exports = shopController;

@@ -30,5 +30,11 @@ router.post(
   shopController.crateShop
 );
 
+router.put(
+  "/:shopId",
+  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  shopController.toggleShopStatus
+);
+
 const shopRouter = router;
 module.exports = shopRouter;
