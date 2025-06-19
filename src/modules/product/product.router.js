@@ -1,56 +1,63 @@
-const router = require('express').Router();
-const { upload } = require('../../utils/cloudnary');    
-
+const router = require("express").Router();
+const { upload } = require("../../utils/cloudnary");
 const auth = require("../../middleware/auth");
 const USER_ROLE = require("../user/user.constant");
-const {
-  createProduct,
-  getAllProduct,
-  getProductById,
-  updateProductById,
-  deleteProductById,
-} = require('./product.controller');
 
-//------------------------- Product Router-------------------------
-// Create product
+const {
+  // getAllProduct,
+  // getProductById,
+  // updateProductById,
+  // deleteProductById,
+  addProduct,
+  getAllProducts,
+  getProductById,
+} = require("./product.controller");
+
 router.post(
-  '/create',
-  upload.single('productImage'),
+  "/create",
+  upload.single("productImage"),
   (req, res, next) => {
-    req.body = JSON.parse(req.body.data);
+    if (req.body?.data) {
+      try {
+        req.body = JSON.parse(req.body.data);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid JSON format in 'data' field",
+        });
+      }
+    }
+    // If no `data`, req.body remains an empty object or unchanged
     next();
   },
   auth(USER_ROLE.admin),
-  createProduct
+  addProduct
 );
-// Get all products
+
 router.get(
-  '/get-all',
-  auth(USER_ROLE.admin, USER_ROLE.user),
-  getAllProduct
+  "/get-all",
+  auth(USER_ROLE.admin, USER_ROLE.company_admin),
+  getAllProducts
 );
-// Get product by ID
 router.get(
-  '/:id',
+  "/:productId",
   auth(USER_ROLE.admin, USER_ROLE.user),
   getProductById
 );
 
-// Update product by ID
-router.put(
-    '/:id',
-    upload.single('productImage'),
-    (req, res, next) => {
-        req.body = JSON.parse(req.body.data);
-        next();
-    },
-    auth(USER_ROLE.admin),
-    updateProductById
-    );
+// router.put(
+//   "/:id",
+//   upload.single("productImage"),
+//   (req, res, next) => {
+//     req.body = JSON.parse(req.body.data);
+//     next();
+//   },
+//   auth(USER_ROLE.admin),
+//   updateProductById
+// );
 
-// Delete product by ID
-router.delete(
-  '/:id',
-  auth(USER_ROLE.admin),
-  deleteProductById
-);
+// // Delete product by ID
+// router.delete("/:id", auth(USER_ROLE.admin), deleteProductById);
+
+const productRouter = router;
+module.exports = productRouter;
