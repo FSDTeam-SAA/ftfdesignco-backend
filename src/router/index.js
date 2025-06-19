@@ -3,6 +3,7 @@ const userRouter = require("../modules/user/user.router");
 const blogRouter = require("../modules/blog/blog.router");
 const categoryRouter = require("../modules/category/category.router");
 const authRouter = require("../modules/auth/auth.router");
+const shopRouter = require("../modules/shop/shop.router");
 
 const router = Router();
 
@@ -23,6 +24,10 @@ const moduleRouter = [
   {
     path: "/category",
     router: categoryRouter,
+  },
+  {
+    path: "/shop",
+    router: shopRouter,
   },
 ];
 

@@ -32,14 +32,14 @@ const userModel = new Schema(
     resetPasswordOtpExpires: { type: Date, default: null },
     role: {
       type: String,
-      enum: ["company_admin", "admin", "employee"],
-      default: "employee",
+      enum: ["company_admin", "admin"],
+      default: "company_admin",
     },
     shop: {
       type: Schema.Types.ObjectId,
       ref: "Shop",
     },
-    isHaveShop: {
+    isShopCreated: {
       type: Boolean,
       default: false,
     },
@@ -60,7 +60,6 @@ userModel.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
-
 
 userModel.post("save", function (doc, next) {
   doc.password = "";

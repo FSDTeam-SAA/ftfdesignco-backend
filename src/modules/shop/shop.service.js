@@ -1,4 +1,55 @@
-const crateShopInDb = async (shop) => {};
+const { sendImageToCloudinary } = require("../../utils/cloudnary");
+const User = require("../user/user.model");
+const Shop = require("./shop.model");
+
+const crateShopInDb = async (payload, email, files) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found");
+
+  if (user.isShopCreated) throw new Error("Shop already created");
+  if (!user.isVerified)
+    throw new Error("Please verify your email address first");
+
+  // TODO: After creating a plan, the user can create a shop...[you have to add a field in the user schema for isPayed]
+
+  // Upload logo image
+  if (files?.companyLogo?.[0]) {
+    const logoImage = files.companyLogo[0];
+    const imageName = `${Date.now()}-${logoImage.originalname}`;
+    const { secure_url } = await sendImageToCloudinary(
+      imageName,
+      logoImage.path
+    );
+    payload.companyLogo = secure_url;
+  }
+
+  if (files?.companyBanner?.[0]) {
+    const bannerImage = files.companyBanner[0];
+    const imageName = `${Date.now()}-${bannerImage.originalname}`;
+    const { secure_url } = await sendImageToCloudinary(
+      imageName,
+      bannerImage.path
+    );
+    payload.companyBanner = secure_url;
+  }
+
+  const result = await Shop.create({
+    ...payload,
+    userId: user._id,
+  });
+
+  await User.findOneAndUpdate(
+    { email },
+    { $set: { isShopCreated: true } },
+    {
+      new: true,
+      projection:
+        "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
+    }
+  );
+
+  return result;
+};
 
 const shopService = {
   crateShopInDb,
