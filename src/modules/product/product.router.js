@@ -11,6 +11,7 @@ const {
   addProduct,
   getAllProducts,
   getProductById,
+  updateProductById,
 } = require("./product.controller");
 
 router.post(
@@ -45,16 +46,26 @@ router.get(
   getProductById
 );
 
-// router.put(
-//   "/:id",
-//   upload.single("productImage"),
-//   (req, res, next) => {
-//     req.body = JSON.parse(req.body.data);
-//     next();
-//   },
-//   auth(USER_ROLE.admin),
-//   updateProductById
-// );
+router.put(
+  "/:productId",
+  upload.single("productImage"),
+  (req, res, next) => {
+    if (req.body?.data) {
+      try {
+        req.body = JSON.parse(req.body.data);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          code: 400,
+          message: "Invalid JSON format in 'data' field",
+        });
+      }
+    }
+    next();
+  },
+  auth(USER_ROLE.admin),
+  updateProductById
+);
 
 // // Delete product by ID
 // router.delete("/:id", auth(USER_ROLE.admin), deleteProductById);
