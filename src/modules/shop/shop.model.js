@@ -30,6 +30,13 @@ const shopModel = new Schema(
       enum: ["approved", "pending", "rejected"],
       default: "pending",
     },
+    products: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+        default: [],
+      },
+    ],
   },
   {
     timestamps: true,
