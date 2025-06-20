@@ -24,7 +24,6 @@ router.post(
         });
       }
     }
-    // If no `data`, req.body remains an empty object or unchanged
     next();
   },
   shopController.crateShop
@@ -35,6 +34,8 @@ router.get(
   auth(USER_ROLE.company_admin, USER_ROLE.admin),
   shopController.shopDetails
 );
+
+router.get("/", auth(USER_ROLE.admin), shopController.getAllShops);
 
 router.put(
   "/:shopId",

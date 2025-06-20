@@ -54,10 +54,31 @@ const shopDetails = async (req, res) => {
   }
 };
 
+const getAllShops = async (req, res) => {
+  try {
+    const result = await shopService.getAllShops();
+
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Shops fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      code: 400,
+      message: "Failed to get shops",
+      error: error.message,
+    });
+  }
+};
+
 const shopController = {
   crateShop,
   toggleShopStatus,
   shopDetails,
+  getAllShops,
 };
 
 module.exports = shopController;

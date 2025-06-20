@@ -62,7 +62,7 @@ router.put(
   updateCategory
 );
 
-router.delete("/:id", auth(USER_ROLE.admin), getCategoryById);
+router.delete("/:categoryId", auth(USER_ROLE.admin), getCategoryById);
 
 const categoryRouter = router;
 module.exports = categoryRouter;

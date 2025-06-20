@@ -167,35 +167,41 @@ exports.updateCategory = async (req, res) => {
   }
 };
 
-//TODO:3. Deleted category is not check
+//TODO:3. Deleted category there are some logic problem ............
 exports.deleteCategory = async (req, res) => {
   try {
-    const { email: userEmail } = req.user;
-    if (!userEmail) {
-      return res.status(400).json({
-        status: false,
+    const { email } = req.user;
+    const { categoryId } = req.params;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        code: 404,
         message: "User not found",
       });
     }
-    const id = req.params.id;
 
-    const existingCategory = await CategoryModel.findById(id);
+    const existingCategory = await Category.findById(categoryId);
     if (!existingCategory) {
       return res.status(404).json({
-        status: false,
+        success: false,
+        code: 404,
         message: "Category not found",
       });
     }
 
     await existingCategory.remove();
     return res.status(200).json({
-      status: true,
+      success: true,
+      code: 200,
       message: "Category deleted successfully",
     });
   } catch (error) {
     return res.status(500).json({
-      status: false,
-      message: "Error deleting category",
+      success: false,
+      code: 500,
+      message: "Could not delete category",
       error: error.message,
     });
   }

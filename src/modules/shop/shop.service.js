@@ -83,10 +83,20 @@ const getShopDetails = async (shopId) => {
   return result;
 };
 
+const getAllShops = async () => {
+  const result = await Shop.find().populate({
+    path: "userId",
+    select:
+      "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
+  });
+  return result;
+};
+
 const shopService = {
   crateShopInDb,
   toggleShopStatus,
   getShopDetails,
+  getAllShops,
 };
 
 module.exports = shopService;
