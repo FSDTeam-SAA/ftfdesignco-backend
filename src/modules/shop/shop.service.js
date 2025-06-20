@@ -52,6 +52,21 @@ const crateShopInDb = async (payload, email, files) => {
   return result;
 };
 
+const getShopDetailsByUserId = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found");
+
+  if (!user.isShopCreated) throw new Error("Shop is not created yet");
+
+  const shop = await Shop.findById(user.shop).populate({
+    path: "userId",
+    select:
+      "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
+  });
+
+  return shop;
+};
+
 const toggleShopStatus = async (payload, shopId) => {
   const shop = await Shop.findById(shopId);
   if (!shop) throw new Error("Shop not found");
@@ -87,8 +102,7 @@ const getShopDetails = async (shopId) => {
 const getAllShops = async () => {
   const result = await Shop.find().populate({
     path: "userId",
-    select:
-      "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
+    select: "name email shop isShopCreated isVerified",
   });
   return result;
 };
@@ -144,6 +158,7 @@ const addProductToShop = async (productId, email) => {
 
 const shopService = {
   crateShopInDb,
+  getShopDetailsByUserId,
   toggleShopStatus,
   getShopDetails,
   getAllShops,
