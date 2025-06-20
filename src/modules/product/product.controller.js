@@ -169,60 +169,55 @@ exports.getProductById = async (req, res) => {
 
 exports.updateProductById = async (req, res) => {
   try {
-    const productId = req.params.id;
-    const {
-      productName,
-      productDescription,
-      productPrice,
-      categoryId,
-      subcategory,
-      productSize,
-    } = req.body;
-    const file = req.file; // fix 1: multer er file access
+    const { productId } = req.params;
+    const { title, description, price, quantity, category } = req.body;
+    const file = req.file;
 
-    // Step 1: Check if product exists
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Step 2: Check category exists
-    const category = await Category.findById(categoryId);
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+    if (category) {
+      const isCategoryExists = await Category.findById(category);
+      if (!isCategoryExists) {
+        return res.status(404).json({
+          success: false,
+          code: 404,
+          message: "Category not found",
+        });
+      }
+      product.category = category;
     }
 
-    // Step 3: Upload image if file exists
-    let productImageUrl = product.productImage; // keep existing image if no new file uploaded
     if (file) {
-      const imageName = `product/${Date.now()}_${file.originalname}`;
+      const imageName = `category/${Date.now()}_${file.originalname}`;
       const path = file.path;
       const { secure_url } = await sendImageToCloudinary(imageName, path);
-      productImageUrl = secure_url;
+      product.productImage = secure_url;
     }
 
-    // Step 4: Update product
-    product.title = productName;
-    product.description = productDescription;
-    product.price = productPrice;
-    product.productImage = productImageUrl;
-    product.category = {
-      _id: category._id,
-      name: category.categoryName,
-    };
-    product.subcategory = subcategory;
-    product.productSize = productSize;
+    if (title) product.title = title;
+    if (description) product.description = description;
+    if (price) product.price = price;
+    if (quantity) product.quantity = quantity;
 
-    await product.save();
+    const updatedProduct = await product.save();
 
     return res.status(200).json({
-      status: true,
+      success: true,
+      code: 200,
       message: "Product updated successfully",
-      data: product,
+      data: updatedProduct,
     });
   } catch (error) {
     console.error("Update product error:", error);
-    res.status(500).json({ message: "Server error", error });
+    return res.status(500).json({
+      success: false,
+      code: 500,
+      message: "Failed to update product",
+      error,
+    });
   }
 };
 
