@@ -5,10 +5,10 @@ const {
   createCategory,
   getAllCategory,
   getCategoryById,
+  updateCategory,
 } = require("./category.controller");
 const auth = require("../../middleware/auth");
 const USER_ROLE = require("../user/user.constant");
-
 
 router.post(
   "/create",
@@ -36,23 +36,30 @@ router.get(
   getAllCategory
 );
 
-
 router.get(
   "/:categoryId",
   auth(USER_ROLE.admin, USER_ROLE.employee, USER_ROLE.company_admin),
   getCategoryById
 );
 
-
 router.put(
-  "/:id",
-  upload.single("categoryThumbnail"),
+  "/:categoryId",
+  upload.single("thumbnail"),
   (req, res, next) => {
-    req.body = JSON.parse(req.body.data);
+    if (req.body?.data) {
+      try {
+        req.body = JSON.parse(req.body.data);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid JSON format in 'data' field",
+        });
+      }
+    }
     next();
   },
   auth(USER_ROLE.admin),
-  getCategoryById
+  updateCategory
 );
 
 router.delete("/:id", auth(USER_ROLE.admin), getCategoryById);

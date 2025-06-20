@@ -3,8 +3,6 @@ const { sendImageToCloudinary } = require("../../utils/cloudnary");
 const User = require("../user/user.model");
 const Category = require("./category.model");
 
-//TODO:: i add user id in category model, it's added is not mandatory but i add it by mistack, so if you want to remove it, so you can check also createCategory, getAllCategory, getCategoryById.
-
 exports.createCategory = async (req, res) => {
   try {
     const { email } = req.user;
@@ -125,46 +123,45 @@ exports.getCategoryById = async (req, res) => {
   }
 };
 
-//TODO:2. Update category is not check
 exports.updateCategory = async (req, res) => {
   try {
-    const { email: userEmail } = req.user;
-    if (!userEmail) {
-      return res.status(400).json({
-        status: false,
-        message: "User not found",
-      });
-    }
-    const id = req.params.id;
-    const { categoryName } = req.body;
+    const { categoryId } = req.params;
+    const { title } = req.body;
+    const file = req.file;
 
-    const existingCategory = await Category.findById(id);
+    const existingCategory = await Category.findById(categoryId);
     if (!existingCategory) {
       return res.status(404).json({
-        status: false,
+        success: false,
         message: "Category not found",
       });
     }
-    const file = req.file;
-    if (file) {
-      const imageName = `category/${Date.now()}_${file.originalname}`;
-      const path = file?.path;
-      const { secure_url } = await sendImageToCloudinary(imageName, path);
 
+    if (title) {
+      existingCategory.title = title;
+    }
+
+    if (file) {
+      const imageName = `category/${Date.now()}-${file.originalname}`;
+      const path = file.path;
+      const { secure_url } = await sendImageToCloudinary(imageName, path);
       existingCategory.thumbnail = secure_url;
     }
-    // Update the category item
-    existingCategory.title = categoryName;
+
     await existingCategory.save();
+
     return res.status(200).json({
-      status: true,
+      success: true,
+      code: 200,
       message: "Category updated successfully",
       data: existingCategory,
     });
   } catch (error) {
+    console.error("Update Category Error:", error);
     return res.status(500).json({
-      status: false,
-      message: "Error updating category",
+      success: false,
+      code: 500,
+      message: "Failed to update category",
       error: error.message,
     });
   }
