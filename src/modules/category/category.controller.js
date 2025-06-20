@@ -42,20 +42,20 @@ exports.createCategory = async (req, res) => {
     const newCategory = await Category.create({
       title,
       thumbnail: secure_url,
-      userId: user._id,
+      // userId: user._id,
     });
 
     // Then populate user info
-    const category = await Category.findById(newCategory._id).populate({
-      path: "userId",
-      select: "name email",
-    });
+    // const category = await Category.findById(newCategory._id).populate({
+    //   path: "userId",
+    //   select: "name email",
+    // });
 
     return res.status(201).json({
       success: true,
       code: 201,
       message: "Category created successfully",
-      data: category,
+      data: newCategory,
     });
   } catch (error) {
     return res.status(500).json({
@@ -87,19 +87,16 @@ exports.getAllCategory = async (req, res) => {
     sortBy = { blogTitle: -1 }; // Z–A
   }
   try {
-    const categories = await Category.find()
-      .populate("userId", "name email")
-      .skip(skip)
-      .limit(limit);
+    const categories = await Category.find().skip(skip).limit(limit);
     return res.status(200).json({
-      status: true,
+      success: true,
       code: 200,
       message: "Categories fetched successfully",
       data: categories,
     });
   } catch (error) {
     return res.status(500).json({
-      status: false,
+      success: false,
       code: 500,
       message: "Failed to fetch categories",
       error: error.message,
@@ -107,23 +104,21 @@ exports.getAllCategory = async (req, res) => {
   }
 };
 
-// Get a single category by ID
 exports.getCategoryById = async (req, res) => {
   try {
     const { categoryId } = req.params;
-    const category = await Category.findById(categoryId).populate({
-      path: "userId",
-      select: "name email",
-    });
+    const category = await Category.findById(categoryId);
 
     return res.status(200).json({
-      status: true,
+      success: true,
+      code: 200,
       message: "Category get successfully",
       data: category,
     });
   } catch (error) {
     return res.status(500).json({
-      status: false,
+      success: false,
+      code: 500,
       message: "Error fetching category",
       error: error.message,
     });
@@ -143,7 +138,7 @@ exports.updateCategory = async (req, res) => {
     const id = req.params.id;
     const { categoryName } = req.body;
 
-    const existingCategory = await CategoryModel.findById(id);
+    const existingCategory = await Category.findById(id);
     if (!existingCategory) {
       return res.status(404).json({
         status: false,

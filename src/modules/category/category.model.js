@@ -5,17 +5,12 @@ const CategorySchema = new Schema(
     title: {
       type: String,
       required: [true, "Title is required"],
-    //   unique: true,
-    //   trim: true,
+      //   unique: true,
+      //   trim: true,
     },
     thumbnail: {
       type: String,
       required: [true, "Thumbnail is required"],
-    },
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    //   required: true,
     },
   },
   {

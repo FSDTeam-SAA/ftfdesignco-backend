@@ -9,8 +9,7 @@ const {
 const auth = require("../../middleware/auth");
 const USER_ROLE = require("../user/user.constant");
 
-//------------------------- Category Router-------------------------
-// Create category
+
 router.post(
   "/create",
   upload.single("thumbnail"),
@@ -30,21 +29,21 @@ router.post(
   auth(USER_ROLE.admin),
   createCategory
 );
-// Get all categories
+
 router.get(
   "/",
   auth(USER_ROLE.admin, USER_ROLE.employee, USER_ROLE.company_admin),
   getAllCategory
 );
 
-// Get category by ID
+
 router.get(
   "/:categoryId",
   auth(USER_ROLE.admin, USER_ROLE.employee, USER_ROLE.company_admin),
   getCategoryById
 );
 
-// Update category by ID
+
 router.put(
   "/:id",
   upload.single("categoryThumbnail"),
@@ -55,7 +54,7 @@ router.put(
   auth(USER_ROLE.admin),
   getCategoryById
 );
-// Delete category by ID
+
 router.delete("/:id", auth(USER_ROLE.admin), getCategoryById);
 
 const categoryRouter = router;
