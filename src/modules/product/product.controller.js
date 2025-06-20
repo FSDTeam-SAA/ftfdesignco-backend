@@ -221,14 +221,10 @@ exports.updateProductById = async (req, res) => {
   }
 };
 
-// Delete product by ID
+
 exports.deleteProductById = async (req, res) => {
   try {
-    const productId = req.params.id;
-    if (!productId) {
-      return res.status(400).json({ message: "Product ID is required" });
-    }
-
+    const { productId } = req.params;
     const product = await Product.findByIdAndDelete(productId);
     if (!product) {
       return res
@@ -237,12 +233,17 @@ exports.deleteProductById = async (req, res) => {
     }
 
     return res.status(200).json({
-      status: true,
+      success: true,
+      code: 200,
       message: "Product deleted successfully",
-      data: product,
     });
   } catch (error) {
     console.error("Delete product error:", error);
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({
+      success: false,
+      code: 500,
+      message: "Failed to delete product",
+      error,
+    });
   }
 };

@@ -4,14 +4,11 @@ const auth = require("../../middleware/auth");
 const USER_ROLE = require("../user/user.constant");
 
 const {
-  // getAllProduct,
-  // getProductById,
-  // updateProductById,
-  // deleteProductById,
   addProduct,
   getAllProducts,
   getProductById,
   updateProductById,
+  deleteProductById,
 } = require("./product.controller");
 
 router.post(
@@ -28,7 +25,6 @@ router.post(
         });
       }
     }
-    // If no `data`, req.body remains an empty object or unchanged
     next();
   },
   auth(USER_ROLE.admin),
@@ -67,8 +63,8 @@ router.put(
   updateProductById
 );
 
-// // Delete product by ID
-// router.delete("/:id", auth(USER_ROLE.admin), deleteProductById);
+
+router.delete("/:productId", auth(USER_ROLE.admin), deleteProductById);
 
 const productRouter = router;
 module.exports = productRouter;
