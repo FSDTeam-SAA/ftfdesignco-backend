@@ -30,6 +30,12 @@ router.post(
 );
 
 router.get(
+  "/my-shop",
+  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  shopController.getShopDetails
+);
+
+router.get(
   "/:shopId",
   auth(USER_ROLE.company_admin, USER_ROLE.admin),
   shopController.shopDetails
@@ -46,20 +52,6 @@ router.put(
 router.post(
   "/add-product",
   auth(USER_ROLE.company_admin, USER_ROLE.admin),
-  // upload.single("productImage"),
-  // (req, res, next) => {
-  //   if (req.body?.data) {
-  //     try {
-  //       req.body = JSON.parse(req.body.data);
-  //     } catch (err) {
-  //       return res.status(400).json({
-  //         success: false,
-  //         message: "Invalid JSON format in 'data' field",
-  //       });
-  //     }
-  //   }
-  //   next();
-  // },
   shopController.addProductInShop
 );
 
