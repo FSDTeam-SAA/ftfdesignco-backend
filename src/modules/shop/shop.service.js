@@ -1,4 +1,5 @@
 const { sendImageToCloudinary } = require("../../utils/cloudnary");
+const Product = require("../product/product.model");
 const User = require("../user/user.model");
 const Shop = require("./shop.model");
 
@@ -40,7 +41,7 @@ const crateShopInDb = async (payload, email, files) => {
 
   await User.findOneAndUpdate(
     { email },
-    { $set: { isShopCreated: true } },
+    { $set: { isShopCreated: true, shop: result._id } },
     {
       new: true,
       projection:
@@ -92,11 +93,61 @@ const getAllShops = async () => {
   return result;
 };
 
+const addProductToShop = async (productId, email) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found");
+
+  const shop = await Shop.findById(user.shop);
+  if (!shop) throw new Error("Shop not found");
+
+  if (!user.isShopCreated) {
+    throw new Error("Shop is not created yet");
+  }
+
+  if (!shop.status || shop.status !== "approved") {
+    throw new Error("Shop is not approved yet");
+  }
+
+  const product = await Product.findById(productId);
+  if (!product) throw new Error("Product not found");
+
+  if (product.quantity <= 0) {
+    throw new Error("Product is out of stock");
+  }
+
+  const updatedShop = await Shop.findByIdAndUpdate(
+    shop._id,
+    { $push: { products: productId } },
+    { new: true }
+  ).populate([
+    {
+      path: "userId",
+      select: "name email shop",
+    },
+    {
+      path: "products",
+      populate: {
+        path: "category",
+        select: "title",
+      },
+    },
+  ]);
+
+  await Product.findByIdAndUpdate(
+    productId,
+    { $inc: { quantity: -1 } },
+    { new: true }
+  );
+
+  return updatedShop;
+};
+
 const shopService = {
   crateShopInDb,
   toggleShopStatus,
   getShopDetails,
   getAllShops,
+  addProductToShop,
 };
 
 module.exports = shopService;
