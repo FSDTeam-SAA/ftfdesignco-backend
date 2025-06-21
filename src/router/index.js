@@ -5,6 +5,7 @@ const categoryRouter = require("../modules/category/category.router");
 const authRouter = require("../modules/auth/auth.router");
 const shopRouter = require("../modules/shop/shop.router");
 const productRouter = require("../modules/product/product.router");
+const requestProduct = require("../modules/requestProducts/requestProduct.router");
 
 const router = Router();
 
@@ -31,8 +32,12 @@ const moduleRouter = [
   },
   {
     path: "/product",
-    router: productRouter
-  }
+    router: productRouter,
+  },
+  {
+    path: "/request-product",
+    router: requestProduct,
+  },
 ];
 
 moduleRouter.forEach((route) => {
