@@ -23,5 +23,11 @@ router.get(
   requestProductController.getOwnRequestProducts
 );
 
+router.put(
+  "/status/:requestId",
+  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  requestProductController.setRequestProductStatus
+);
+
 const requestProduct = router;
 module.exports = requestProduct;

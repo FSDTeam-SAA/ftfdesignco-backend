@@ -70,10 +70,37 @@ const getOwnRequestProducts = async (req, res) => {
   }
 };
 
+const setRequestProductStatus = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { status } = req.body;
+    const result = await requestProductService.setRequestProductStatus(
+      requestId,
+      status
+    );
+
+    res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Request product status updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error setting request product status:", error);
+    res.status(500).json({
+      success: false,
+      code: 500,
+      message: "Failed to set request product status",
+      error: error.message,
+    });
+  }
+};
+
 const requestProductController = {
   addRequestProduct,
   getAllRequestProducts,
   getOwnRequestProducts,
+  setRequestProductStatus,
 };
 
 module.exports = requestProductController;
