@@ -107,6 +107,7 @@ const getAllShops = async () => {
   return result;
 };
 
+//TODO: there are some logic to be added here and some polishing also add.[ don't change there anything.]............
 const addProductToShop = async (productId, email) => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("User not found");

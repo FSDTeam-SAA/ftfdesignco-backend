@@ -28,14 +28,6 @@ const ProductSchema = new Schema(
       ref: "Category",
       required: [true, "Category is required"],
     },
-    // subcategory: {
-    //   type: String,
-    //   required: false,
-    // },
-    // productSize: {
-    //   type: String,
-    //   required: false,
-    // },
   },
   {
     timestamps: true,

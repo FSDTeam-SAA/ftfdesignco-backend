@@ -63,7 +63,6 @@ router.put(
   updateProductById
 );
 
-
 router.delete("/:productId", auth(USER_ROLE.admin), deleteProductById);
 
 const productRouter = router;
