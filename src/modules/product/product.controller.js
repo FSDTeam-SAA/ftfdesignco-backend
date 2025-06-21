@@ -63,9 +63,12 @@ exports.addProduct = async (req, res) => {
 //TODO:1 there are to much isue i face, i only check can i get all products & limit and other fields i face some isue.Please solved it.
 exports.getAllProducts = async (req, res) => {
   try {
+    // Pagination
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+
+    // Filters
     const search = req.query.search || "";
     const selectedPrices = req.query.prices ? req.query.prices.split(",") : [];
     const sizeFilter = req.query.size || "";
@@ -74,21 +77,25 @@ exports.getAllProducts = async (req, res) => {
 
     const filter = {};
 
+    // Search filter
     if (search) {
       filter.$or = [
         { productName: { $regex: search, $options: "i" } },
-        { productDescription: { $regex: search, $options: "i" } },
+        { productDescription: { $regex: search, $options: "i" } }
       ];
     }
 
+    // Size filter
     if (sizeFilter) {
       filter.size = sizeFilter;
     }
 
+    // Category filter
     if (categoryFilter) {
-      filter.category = categoryFilter; // expects category _id
+      filter.category = categoryFilter; // Assumes category is stored as ObjectId
     }
 
+    // Price Range filter (multiple ranges supported)
     const isValidRange = (rangeStr) => /^\d+-\d+$/.test(rangeStr);
     const priceConditions = selectedPrices
       .filter(isValidRange)
@@ -98,27 +105,40 @@ exports.getAllProducts = async (req, res) => {
       });
 
     if (priceConditions.length > 0) {
-      filter.$or = filter.$or
-        ? [...filter.$or, ...priceConditions]
-        : priceConditions;
+      // If `$or` already exists (from search), merge with `$and`
+      if (filter.$or) {
+        filter.$and = [{ $or: filter.$or }, { $or: priceConditions }];
+        delete filter.$or;
+      } else {
+        filter.$or = priceConditions;
+      }
     }
 
+    // Sorting
     let sortQuery = {};
-    if (sortBy === "asc") {
-      sortQuery = { productName: 1 };
-    } else if (sortBy === "desc") {
-      sortQuery = { productName: -1 };
-    } else if (sortBy === "recent") {
-      sortQuery = { createdAt: -1 };
+    switch (sortBy) {
+      case "asc":
+        sortQuery = { productName: 1 };
+        break;
+      case "desc":
+        sortQuery = { productName: -1 };
+        break;
+      case "recent":
+        sortQuery = { createdAt: -1 };
+        break;
+      default:
+        sortQuery = {}; // No sorting
     }
 
-    const products = await Product.find(filter)
-      .skip(skip)
-      .limit(limit)
-      .sort(sortQuery)
-      .populate("category", "title");
-
-    const totalProducts = await Product.countDocuments(filter);
+    // Query DB
+    const [products, totalProducts] = await Promise.all([
+      Product.find(filter)
+        .skip(skip)
+        .limit(limit)
+        .sort(sortQuery)
+        .populate("category", "title"),
+      Product.countDocuments(filter)
+    ]);
 
     return res.status(200).json({
       success: true,
@@ -139,6 +159,7 @@ exports.getAllProducts = async (req, res) => {
     });
   }
 };
+
 
 exports.getProductById = async (req, res) => {
   try {
