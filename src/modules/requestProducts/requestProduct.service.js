@@ -40,10 +40,28 @@ const getOwnRequestProductFromdb = async (email) => {
   return result;
 };
 
+const setRequestProductStatus = async (requestId, status) => {
+  const request = await RequestProduct.findById(requestId);
+  if (!request) throw new Error("Request not found");
+
+  if (!["approved", "rejected"].includes(status)) {
+    throw new Error("Invalid status");
+  }
+
+  const result = await RequestProduct.findByIdAndUpdate(
+    requestId,
+    { status },
+    { new: true }
+  );
+
+  return result;
+};
+
 const requestProductService = {
   addRequestProductIndb,
   getAllRequestProductFromdb,
   getOwnRequestProductFromdb,
+  setRequestProductStatus,
 };
 
 module.exports = requestProductService;
