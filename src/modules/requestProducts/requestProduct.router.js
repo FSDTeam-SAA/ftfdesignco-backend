@@ -11,5 +11,17 @@ router.post(
   requestProductController.addRequestProduct
 );
 
+router.get(
+  "/",
+  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  requestProductController.getAllRequestProducts
+);
+
+router.get(
+  "/own-requests",
+  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  requestProductController.getOwnRequestProducts
+);
+
 const requestProduct = router;
 module.exports = requestProduct;
