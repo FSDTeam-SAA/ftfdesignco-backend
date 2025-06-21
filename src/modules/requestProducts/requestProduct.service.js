@@ -2,12 +2,14 @@ const User = require("../user/user.model");
 const RequestProduct = require("./requestProduct.model");
 
 const addRequestProductIndb = async (payload, email) => {
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).populate("shop", "companyName");
   if (!user) throw new Error("User not found");
 
   if (!user.isShopCreated) {
     throw new Error("You need to create a shop first");
   }
+
+  if (!user.shop) throw new Error("Shop not found for this user");
 
   const request = await RequestProduct.create({
     ...payload,
@@ -16,7 +18,14 @@ const addRequestProductIndb = async (payload, email) => {
 
   const result = await RequestProduct.findById(request._id)
     .populate("category", "title")
-    .populate("userId", "name email");
+    .populate({
+      path: "userId",
+      select: "name email shop",
+      populate: {
+        path: "shop",
+        select: "comanyName",
+      },
+    });
 
   return result;
 };
@@ -24,7 +33,14 @@ const addRequestProductIndb = async (payload, email) => {
 const getAllRequestProductFromdb = async () => {
   const result = await RequestProduct.find()
     .populate("category", "title")
-    .populate("userId", "name email");
+    .populate({
+      path: "userId",
+      select: "name email shop",
+      populate: {
+        path: "shop",
+        select: "comanyName",
+      },
+    });
 
   return result;
 };
@@ -35,7 +51,14 @@ const getOwnRequestProductFromdb = async (email) => {
 
   const result = await RequestProduct.find({ userId: user._id })
     .populate("category", "title")
-    .populate("userId", "name email");
+    .populate({
+      path: "userId",
+      select: "name email shop",
+      populate: {
+        path: "shop",
+        select: "comanyName",
+      },
+    });
 
   return result;
 };
