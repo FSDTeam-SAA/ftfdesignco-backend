@@ -112,8 +112,7 @@ const addProductInShop = async (req, res) => {
     return res.status(400).json({
       success: false,
       code: 400,
-      message: "Failed to add product in shop",
-      error: error.message,
+      message: error.message,
     });
   }
 };

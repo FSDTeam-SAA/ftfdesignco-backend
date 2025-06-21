@@ -12,7 +12,7 @@ const shopModel = new Schema(
       required: true,
     },
     comanyName: {
-      //! when final check fixed it.[and search for comapnyName in product schema and fixed correctly]
+      //! when final check fixed it.[and search for comapnyName other router  and fixed correctly]
       type: String,
       required: true,
     },

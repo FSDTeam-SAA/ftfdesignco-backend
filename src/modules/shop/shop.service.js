@@ -1,4 +1,5 @@
 const { sendImageToCloudinary } = require("../../utils/cloudnary");
+const AssignedProduct = require("../assignedProduct/assignedProduct.model");
 const Product = require("../product/product.model");
 const User = require("../user/user.model");
 const Shop = require("./shop.model");
@@ -126,9 +127,9 @@ const addProductToShop = async (productId, email) => {
   const product = await Product.findById(productId);
   if (!product) throw new Error("Product not found");
 
-  if (product.quantity <= 0) {
-    throw new Error("Product is out of stock");
-  }
+  // if (product.quantity <= 0) {
+  //   throw new Error("Product is out of stock");
+  // }
 
   const updatedShop = await Shop.findByIdAndUpdate(
     shop._id,
@@ -148,10 +149,10 @@ const addProductToShop = async (productId, email) => {
     },
   ]);
 
-  await Product.findByIdAndUpdate(
-    productId,
-    { $inc: { quantity: -1 } },
-    { new: true }
+  await AssignedProduct.updateOne(
+    { productId: productId, userId: user._id },
+    { $set: { productId: productId, userId: user._id } },
+    { upsert: true }
   );
 
   return updatedShop;
