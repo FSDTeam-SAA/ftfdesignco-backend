@@ -1,0 +1,97 @@
+const Stripe = require('stripe')
+const { Payment } = require('../models/payment.model')
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2025-05-28.basil',
+})
+
+const createPayment = async (req, res) => {
+  const { userId, planId, orderId, amount } = req.body
+
+  if (!userId || !amount) {
+    res.status(400).json({
+      error: 'userId and amount are required.',
+    })
+    return
+  }
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100),
+      currency: 'usd',
+      metadata: {
+        userId,
+        planId,
+        orderId,
+      },
+    })
+
+    const paymentInfo = new Payment({
+      userId,
+      planId,
+      orderId,
+      amount,
+      transactionId: paymentIntent.id,
+      status: 'pending',
+    })
+    await paymentInfo.save()
+
+    res.status(200).json({
+      success: true,
+      clientSecret: paymentIntent.client_secret,
+      message: 'PaymentIntent created.',
+    })
+  } catch (error) {
+    console.error('Error creating PaymentIntent:', error)
+    res.status(500).json({
+      error: 'Internal server error.',
+    })
+  }
+}
+
+const confirmPayment = async (req, res) => {
+  const { paymentIntentId } = req.body
+
+  if (!paymentIntentId) {
+    res.status(400).json({
+      error: 'paymentIntentId is required.',
+    })
+    return
+  }
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+
+    if (paymentIntent.status === 'succeeded') {
+      await Payment.findOneAndUpdate(
+        { transactionId: paymentIntentId },
+        { status: 'success' }
+      )
+
+      res.status(200).json({
+        success: true,
+        message: 'Payment successfully captured.',
+        paymentIntent,
+      })
+    } else {
+      await Payment.findOneAndUpdate(
+        { transactionId: paymentIntentId },
+        { status: 'failed' }
+      )
+
+      res.status(400).json({
+        error: 'Payment was not successful.',
+      })
+    }
+  } catch (error) {
+    console.error('Error confirming payment:', error)
+    res.status(500).json({
+      error: 'Internal server error.',
+    })
+  }
+}
+
+module.exports = {
+  createPayment,
+  confirmPayment,
+}
