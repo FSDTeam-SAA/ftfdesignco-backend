@@ -21,8 +21,29 @@ const addRequestProductIndb = async (payload, email) => {
   return result;
 };
 
+const getAllRequestProductFromdb = async () => {
+  const result = await RequestProduct.find()
+    .populate("category", "title")
+    .populate("userId", "name email");
+
+  return result;
+};
+
+const getOwnRequestProductFromdb = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found");
+
+  const result = await RequestProduct.find({ userId: user._id })
+    .populate("category", "title")
+    .populate("userId", "name email");
+
+  return result;
+};
+
 const requestProductService = {
   addRequestProductIndb,
+  getAllRequestProductFromdb,
+  getOwnRequestProductFromdb,
 };
 
 module.exports = requestProductService;

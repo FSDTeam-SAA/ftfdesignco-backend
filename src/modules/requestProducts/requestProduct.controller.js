@@ -25,8 +25,55 @@ const addRequestProduct = async (req, res) => {
   }
 };
 
+const getAllRequestProducts = async (req, res) => {
+  try {
+    const result = await requestProductService.getAllRequestProductFromdb();
+
+    res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Request products fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error fetching request products:", error);
+    res.status(500).json({
+      success: false,
+      code: 500,
+      message: "Failed to fetch request products",
+      error: error.message,
+    });
+  }
+};
+
+const getOwnRequestProducts = async (req, res) => {
+  try {
+    const { email } = req.user;
+    const result = await requestProductService.getOwnRequestProductFromdb(
+      email
+    );
+
+    res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Your request products get successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error fetching own request products:", error);
+    res.status(500).json({
+      success: false,
+      code: 500,
+      message: "Failed to fetch own request products",
+      error: error.message,
+    });
+  }
+};
+
 const requestProductController = {
   addRequestProduct,
+  getAllRequestProducts,
+  getOwnRequestProducts,
 };
 
 module.exports = requestProductController;
