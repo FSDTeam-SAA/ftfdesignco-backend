@@ -7,6 +7,7 @@ const shopRouter = require("../modules/shop/shop.router");
 const productRouter = require("../modules/product/product.router");
 const requestProduct = require("../modules/requestProducts/requestProduct.router");
 const assignedProduct = require("../modules/assignedProduct/assignedProduct.router");
+const sendMessageRouter = require("../modules/contract/contract.router");
 
 const router = Router();
 
@@ -42,6 +43,10 @@ const moduleRouter = [
   {
     path: "/assigned-product",
     router: assignedProduct,
+  },
+  {
+    path: "/contract",
+    router: sendMessageRouter,
   },
 ];
 
