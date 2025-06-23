@@ -19,8 +19,7 @@ const addRequestProduct = async (req, res) => {
     res.status(500).json({
       success: false,
       code: 500,
-      message: "Failed to add request product",
-      error: error.message,
+      message: error.message,
     });
   }
 };
