@@ -8,6 +8,8 @@ const productRouter = require("../modules/product/product.router");
 const requestProduct = require("../modules/requestProducts/requestProduct.router");
 const assignedProduct = require("../modules/assignedProduct/assignedProduct.router");
 const sendMessageRouter = require("../modules/contract/contract.router");
+const paymentRouter = require("../modules/payment/payment.routes");
+const employeeRouter = require("../modules/employee/employee.router");
 
 const router = Router();
 
@@ -47,6 +49,14 @@ const moduleRouter = [
   {
     path: "/contract",
     router: sendMessageRouter,
+  },
+  {
+    path: "/payment",
+    router: paymentRouter,
+  },
+  {
+    path: "/employee",
+    router: employeeRouter,
   },
 ];
 
