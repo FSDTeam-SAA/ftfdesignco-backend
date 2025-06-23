@@ -278,6 +278,38 @@ const employeeLogin = async (payload) => {
   };
 };
 
+//! there are some error...........................
+const changeEmployeePassword = async (employeeId, payload) => {
+  const employee = await Employee.findOne(employeeId).select("+password");
+  if (!employee) {
+    throw new Error("Employee not found");
+  }
+
+  const isPasswordMatched = await bcrypt.compare(
+    payload.currentPassword,
+    employee.password
+  );
+  if (!isPasswordMatched) {
+    throw new Error("Invalid current password");
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.bcryptSaltRounds)
+  );
+
+  const result = await Employee.findByIdAndUpdate(
+    employeeId,
+    {
+      password: hashedPassword,
+      needPasswordChange: false,
+    },
+    { new: true }
+  ).select("-password");
+
+  return result;
+};
+
 const authService = {
   loginUser,
   LoginRefreshToken,
@@ -286,6 +318,7 @@ const authService = {
   resetPassword,
   changePassword,
   employeeLogin,
+  changeEmployeePassword,
 };
 
 module.exports = authService;
