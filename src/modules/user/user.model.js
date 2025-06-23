@@ -25,7 +25,7 @@ const userModel = new Schema(
       type: Boolean,
       default: false,
     },
-    imageLink: { type: String, default: null},
+    imageLink: { type: String, default: null },
     otp: { type: String, default: null },
     otpExpires: { type: Date, default: null },
     resetPasswordOtp: { type: String, default: null },
@@ -46,7 +46,6 @@ const userModel = new Schema(
   },
   { timestamps: true, versionKey: false }
 );
-
 
 userModel.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
