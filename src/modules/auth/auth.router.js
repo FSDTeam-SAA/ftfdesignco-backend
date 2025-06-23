@@ -27,5 +27,7 @@ router.post(
   authController.changePassword
 );
 
+router.post("/employee-login", authController.employeeLogin);
+
 const authRouter = router;
 module.exports = authRouter;
