@@ -20,6 +20,7 @@ const userModel = new Schema(
     phone: {
       type: String,
       required: [true, "Phone is required"],
+      unique: [true, "Phone number must be unique"],
     },
     isVerified: {
       type: Boolean,

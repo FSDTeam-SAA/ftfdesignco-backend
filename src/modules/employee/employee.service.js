@@ -8,7 +8,6 @@ const createEmployeeInDb = async (email, payload) => {
   if (!user.isShopCreated) {
     throw new Error("You need to create a shop first");
   }
-
   if (!user.shop) throw new Error("Shop not found");
 
   //TODO: where check purchase plan how many employees can be added.
@@ -27,7 +26,7 @@ const createEmployeeInDb = async (email, payload) => {
 
   const newEmployee = await Employee.create({
     ...payload,
-    shop: user.shop._id,
+    shop: user?.shop._id,
     userId: user._id,
   });
 
