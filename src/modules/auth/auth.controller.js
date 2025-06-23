@@ -119,6 +119,33 @@ const changePassword = async (req, res) => {
   }
 };
 
+const employeeLogin = async (req, res) => {
+  try {
+    const result = await authService.employeeLogin(req.body);
+
+    const { refreshToken, accessToken, employee, needPasswordChange } = result;
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: config.NODE_ENV === "production",
+      sameSite: config.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Employee logged in successfully",
+      data: {
+        accessToken,
+        employee,
+        needPasswordChange,
+      },
+    });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 const authController = {
   loginUser,
   refreshToken,
@@ -126,6 +153,7 @@ const authController = {
   verifyToken,
   resetPassword,
   changePassword,
+  employeeLogin,
 };
 
 module.exports = authController;
