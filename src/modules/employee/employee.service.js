@@ -45,7 +45,24 @@ const createEmployeeInDb = async (email, payload) => {
   return result;
 };
 
+const getMyEmployees = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found");
+
+  if (!user.isShopCreated) {
+    throw new Error("You need to create a shop first");
+  }
+  if (!user.shop) throw new Error("Shop not found");
+
+  const employees = await Employee.find({ shop: user.shop._id })
+    .populate({ path: "shop", select: "comanyName" })
+    .populate({ path: "userId", select: "name email" });
+
+  return employees;
+};
+
 const employeeService = {
   createEmployeeInDb,
+  getMyEmployees,
 };
 module.exports = employeeService;

@@ -17,7 +17,25 @@ const createEmployee = async (req, res) => {
   }
 };
 
+const getMyEmployees = async (req, res) => {
+  try {
+    const { email } = req.user;
+    const result = await employeeService.getMyEmployees(email);
+
+    return res.status(200).json({
+      status: true,
+      code: 200,
+      message: "Employees fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error fetching employees:", error);
+    res.status(500).json({ status: false, code: 500, message: error.message });
+  }
+};
+
 const employeeController = {
   createEmployee,
+  getMyEmployees,
 };
 module.exports = employeeController;
