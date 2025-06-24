@@ -143,13 +143,9 @@ const addProductToShop = async (productId, email) => {
   const product = await Product.findById(productId);
   if (!product) throw new Error("Product not found");
 
-  // if (product.quantity <= 0) {
-  //   throw new Error("Product is out of stock");
-  // }
-
   const updatedShop = await Shop.findByIdAndUpdate(
     shop._id,
-    { $push: { products: productId } },
+    { $push: { products: { productId, productQuantity: product.quantity } } },
     { new: true }
   ).populate([
     {
@@ -157,7 +153,7 @@ const addProductToShop = async (productId, email) => {
       select: "name email shop",
     },
     {
-      path: "products",
+      path: "products.productId",
       populate: {
         path: "category",
         select: "title",
