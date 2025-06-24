@@ -247,7 +247,7 @@ const employeeLogin = async (payload) => {
   }
 
   const JwtToken = {
-    userId: employee._id,
+    employeeId: employee.employeeId,
     email: employee.email,
     role: employee.role,
   };
@@ -279,8 +279,8 @@ const employeeLogin = async (payload) => {
 };
 
 //! there are some error...........................
-const changeEmployeePassword = async (employeeId, payload) => {
-  const employee = await Employee.findOne(employeeId).select("+password");
+const changeEmployeePassword = async (payload, employeeId) => {
+  const employee = await Employee.findOne({ employeeId }).select("+password");
   if (!employee) {
     throw new Error("Employee not found");
   }
@@ -299,7 +299,7 @@ const changeEmployeePassword = async (employeeId, payload) => {
   );
 
   const result = await Employee.findByIdAndUpdate(
-    employeeId,
+    employee._id,
     {
       password: hashedPassword,
       needPasswordChange: false,

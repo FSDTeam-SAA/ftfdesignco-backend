@@ -148,9 +148,11 @@ const employeeLogin = async (req, res) => {
 
 const changeEmployeePassword = async (req, res) => {
   try {
-    console.log(req.user);
-    const { userId } = req.user;
-    const result = await authService.changeEmployeePassword(req.body, userId);
+    const { employeeId } = req.user;
+    const result = await authService.changeEmployeePassword(
+      req.body,
+      employeeId
+    );
 
     return res.status(200).json({
       success: true,
