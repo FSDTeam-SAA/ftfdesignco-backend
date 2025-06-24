@@ -1,5 +1,3 @@
-// models/subscriptionPlan.model.js
-
 const { Schema, model } = require('mongoose')
 
 const subscriptionPlanSchema = new Schema(

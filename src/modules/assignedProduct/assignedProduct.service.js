@@ -15,7 +15,7 @@ const getAssignedProductForUser = async () => {
       select: "name email shop",
       populate: {
         path: "shop",
-        select: "comanyName",
+        select: "companyName",
       },
     })
     .exec();

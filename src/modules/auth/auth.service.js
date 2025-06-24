@@ -278,7 +278,7 @@ const employeeLogin = async (payload) => {
   };
 };
 
-//! there are some error...........................
+
 const changeEmployeePassword = async (payload, employeeId) => {
   const employee = await Employee.findOne({ employeeId }).select("+password");
   if (!employee) {

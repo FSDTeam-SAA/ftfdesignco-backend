@@ -1,4 +1,3 @@
-
 const SubscriptionPlan = require('./subscriptionPlan.model')
 
 exports.createPlan = async (req, res) => {

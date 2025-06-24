@@ -31,7 +31,7 @@ const createEmployeeInDb = async (email, payload) => {
   });
 
   const result = await Employee.findById(newEmployee._id)
-    .populate({ path: "shop", select: "comanyName" })
+    .populate({ path: "shop", select: "companyName" })
     .populate({ path: "userId", select: "name email" });
 
   await User.findByIdAndUpdate(
@@ -55,7 +55,7 @@ const getMyEmployees = async (email) => {
   if (!user.shop) throw new Error("Shop not found");
 
   const employees = await Employee.find({ shop: user.shop._id })
-    .populate({ path: "shop", select: "comanyName" })
+    .populate({ path: "shop", select: "companyName" })
     .populate({ path: "userId", select: "name email" });
 
   return employees;

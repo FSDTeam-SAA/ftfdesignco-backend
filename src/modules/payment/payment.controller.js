@@ -1,31 +1,31 @@
-const Stripe = require('stripe')
+const Stripe = require("stripe");
 
-const { Payment } = require('../payment/payment.model')
+const { Payment } = require("../payment/payment.model");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-05-28.basil',
-})
+  apiVersion: "2025-05-28.basil",
+});
 
 const createPayment = async (req, res) => {
-  const { userId, planId, orderId, amount } = req.body
+  const { userId, planId, orderId, amount } = req.body;
 
   if (!userId || !amount) {
     res.status(400).json({
-      error: 'userId and amount are required.',
-    })
-    return
+      error: "userId and amount are required.",
+    });
+    return;
   }
 
   try {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100),
-      currency: 'usd',
+      currency: "usd",
       metadata: {
         userId,
         planId,
         orderId,
       },
-    })
+    });
 
     const paymentInfo = new Payment({
       userId,
@@ -33,66 +33,69 @@ const createPayment = async (req, res) => {
       orderId,
       amount,
       transactionId: paymentIntent.id,
-      status: 'pending',
-    })
-    await paymentInfo.save()
+      status: "pending",
+    });
+    await paymentInfo.save();
 
     res.status(200).json({
       success: true,
       clientSecret: paymentIntent.client_secret,
-      message: 'PaymentIntent created.',
-    })
+      message: "PaymentIntent created.",
+    });
   } catch (error) {
-    console.error('Error creating PaymentIntent:', error)
+    console.error("Error creating PaymentIntent:", error);
     res.status(500).json({
-      error: 'Internal server error.',
-    })
+      success: false,
+      error: "Internal server error.",
+    });
   }
-}
+};
 
 const confirmPayment = async (req, res) => {
-  const { paymentIntentId } = req.body
+  const { paymentIntentId } = req.body;
 
   if (!paymentIntentId) {
     res.status(400).json({
-      error: 'paymentIntentId is required.',
-    })
-    return
+      error: "paymentIntentId is required.",
+    });
+    return;
   }
 
   try {
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
-    if (paymentIntent.status === 'succeeded') {
+    if (paymentIntent.status === "succeeded") {
       await Payment.findOneAndUpdate(
         { transactionId: paymentIntentId },
-        { status: 'success' }
-      )
+        { status: "success" }
+      );
 
       res.status(200).json({
         success: true,
-        message: 'Payment successfully captured.',
+        message: "Payment successfully captured.",
         paymentIntent,
-      })
+      });
     } else {
       await Payment.findOneAndUpdate(
         { transactionId: paymentIntentId },
-        { status: 'failed' }
-      )
+        { status: "failed" }
+      );
 
       res.status(400).json({
-        error: 'Payment was not successful.',
-      })
+        error: "Payment was not successful.",
+      });
     }
   } catch (error) {
-    console.error('Error confirming payment:', error)
+    console.error("Error confirming payment:", error);
     res.status(500).json({
-      error: 'Internal server error.',
-    })
+      success: false,
+      code: 500,
+      error: "Internal server error.",
+    });
   }
-}
+};
 
 module.exports = {
   createPayment,
   confirmPayment,
-}
+};
