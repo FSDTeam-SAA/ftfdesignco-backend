@@ -1,4 +1,5 @@
 const Stripe = require('stripe')
+
 const { Payment } = require('../payment/payment.model')
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
