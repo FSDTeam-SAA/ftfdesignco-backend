@@ -9,7 +9,6 @@ const {
 
 const router = express.Router()
 
-// Only admin users should manage plans
 router.post('/', createPlan)
 router.get('/', getAllPlans)
 router.get('/:id', getSinglePlan)
