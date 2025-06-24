@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const bcrypt = require("bcrypt");
 
 const employeeModel = new Schema({
   name: {
@@ -10,6 +11,15 @@ const employeeModel = new Schema({
     required: [true, "Email is required"],
     unique: true,
   },
+  employeeId: {
+    type: String,
+    required: [true, "Employee ID is required"],
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: [true, "Password is required"],
+  },
   needPasswordChange: {
     type: Boolean,
     default: true,
@@ -18,7 +28,7 @@ const employeeModel = new Schema({
     type: String,
     default: "employee",
   },
-  companyId: {
+  shop: {
     type: Schema.Types.ObjectId,
     ref: "Shop",
   },
@@ -26,6 +36,17 @@ const employeeModel = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
   },
+});
+
+employeeModel.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+employeeModel.post("save", function (doc, next) {
+  doc.password = "";
+  next();
 });
 
 const Employee = model("Employee", employeeModel);

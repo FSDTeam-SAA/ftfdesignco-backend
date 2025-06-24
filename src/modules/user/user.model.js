@@ -20,6 +20,7 @@ const userModel = new Schema(
     phone: {
       type: String,
       required: [true, "Phone is required"],
+      unique: [true, "Phone number must be unique"],
     },
     isVerified: {
       type: Boolean,
@@ -42,6 +43,10 @@ const userModel = new Schema(
     isShopCreated: {
       type: Boolean,
       default: false,
+    },
+    employeeCount: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true, versionKey: false }

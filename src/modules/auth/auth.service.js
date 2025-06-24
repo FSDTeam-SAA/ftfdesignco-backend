@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const verificationCodeTemplate = require("../../utils/verificationCodeTemplate");
 const sendEmail = require("../../utils/sendEmail");
+const Employee = require("../employee/employee.model");
 
 const loginUser = async (payload) => {
   const user = await User.findOne({ email: payload.email }).select("+password");
@@ -228,6 +229,87 @@ const changePassword = async (payload, email) => {
   return result;
 };
 
+const employeeLogin = async (payload) => {
+  const employee = await Employee.findOne({
+    employeeId: payload.employeeId,
+  }).select("+password");
+
+  if (!employee) {
+    throw new Error("Employee not found");
+  }
+
+  const isPasswordMatched = await bcrypt.compare(
+    payload.password,
+    employee.password
+  );
+  if (!isPasswordMatched) {
+    throw new Error("Invalid password");
+  }
+
+  const JwtToken = {
+    employeeId: employee.employeeId,
+    email: employee.email,
+    role: employee.role,
+  };
+
+  const accessToken = createToken(
+    JwtToken,
+    config.JWT_SECRET,
+    config.JWT_EXPIRES_IN
+  );
+
+  const refreshToken = createToken(
+    JwtToken,
+    config.refreshTokenSecret,
+    config.jwtRefreshTokenExpiresIn
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+    employee: {
+      _id: employee._id,
+      employeeId: employee.employeeId,
+      email: employee.email,
+      shop: employee.shop,
+      userId: employee.userId,
+    },
+    needPasswordChange: employee.needPasswordChange,
+  };
+};
+
+//! there are some error...........................
+const changeEmployeePassword = async (payload, employeeId) => {
+  const employee = await Employee.findOne({ employeeId }).select("+password");
+  if (!employee) {
+    throw new Error("Employee not found");
+  }
+
+  const isPasswordMatched = await bcrypt.compare(
+    payload.currentPassword,
+    employee.password
+  );
+  if (!isPasswordMatched) {
+    throw new Error("Invalid current password");
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.bcryptSaltRounds)
+  );
+
+  const result = await Employee.findByIdAndUpdate(
+    employee._id,
+    {
+      password: hashedPassword,
+      needPasswordChange: false,
+    },
+    { new: true }
+  ).select("-password");
+
+  return result;
+};
+
 const authService = {
   loginUser,
   LoginRefreshToken,
@@ -235,6 +317,8 @@ const authService = {
   verifyToken,
   resetPassword,
   changePassword,
+  employeeLogin,
+  changeEmployeePassword,
 };
 
 module.exports = authService;
