@@ -35,9 +35,14 @@ const shopModel = new Schema(
     },
     products: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "Product",
-        default: [],
+        productId: {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
+        },
+        productQuantity: {
+          type: Number,
+          default: 0,
+        },
       },
     ],
   },
