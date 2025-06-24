@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 })
 
 const createPayment = async (req, res) => {
-  const { userId, planId, orderId, amount } = req.body
+  const { userId, planId, amount } = req.body
 
   if (!userId || !amount) {
     res.status(400).json({
@@ -23,14 +23,12 @@ const createPayment = async (req, res) => {
       metadata: {
         userId,
         planId,
-        orderId,
       },
     })
 
     const paymentInfo = new Payment({
       userId,
       planId,
-      orderId,
       amount,
       transactionId: paymentIntent.id,
       status: 'pending',
