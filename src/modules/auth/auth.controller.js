@@ -146,6 +146,26 @@ const employeeLogin = async (req, res) => {
   }
 };
 
+const changeEmployeePassword = async (req, res) => {
+  try {
+    const { employeeId } = req.user;
+    const result = await authService.changeEmployeePassword(
+      req.body,
+      employeeId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Employee password changed successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ success: false, code: 400, message: error.message });
+  }
+};
+
 const authController = {
   loginUser,
   refreshToken,
@@ -154,6 +174,7 @@ const authController = {
   resetPassword,
   changePassword,
   employeeLogin,
+  changeEmployeePassword,
 };
 
 module.exports = authController;
