@@ -10,11 +10,13 @@ const shopModel = new Schema(
     companyId: {
       type: String,
       required: true,
+      unique: true,
     },
-    comanyName: {
-      //! when final check fixed it.[and search for comapnyName other router  and fixed correctly]
+    companyName: {
       type: String,
       required: true,
+      trim: true,
+      unique: true,
     },
     companyLogo: {
       type: String,

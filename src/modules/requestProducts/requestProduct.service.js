@@ -23,7 +23,7 @@ const addRequestProductIndb = async (payload, email) => {
       select: "name email shop",
       populate: {
         path: "shop",
-        select: "comanyName",
+        select: "companyName",
       },
     });
 
@@ -38,7 +38,7 @@ const getAllRequestProductFromdb = async () => {
       select: "name email shop",
       populate: {
         path: "shop",
-        select: "comanyName",
+        select: "companyName",
       },
     });
 
@@ -56,7 +56,7 @@ const getOwnRequestProductFromdb = async (email) => {
       select: "name email shop",
       populate: {
         path: "shop",
-        select: "comanyName",
+        select: "companyName",
       },
     });
 

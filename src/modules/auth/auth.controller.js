@@ -122,7 +122,6 @@ const changePassword = async (req, res) => {
 const employeeLogin = async (req, res) => {
   try {
     const result = await authService.employeeLogin(req.body);
-
     const { refreshToken, accessToken, employee, needPasswordChange } = result;
 
     res.cookie("refreshToken", refreshToken, {
