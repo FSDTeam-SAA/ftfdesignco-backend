@@ -10,55 +10,61 @@ const assignedProduct = require("../modules/assignedProduct/assignedProduct.rout
 const sendMessageRouter = require("../modules/contract/contract.router");
 const paymentRouter = require("../modules/payment/payment.routes");
 const employeeRouter = require("../modules/employee/employee.router");
+const subscriptionPlanRouter = require('../modules/subscriptionPlan/subscriptionPlan.route')
+const { path } = require("../app");
 
 const router = Router();
 
 const moduleRouter = [
   {
-    path: "/user",
+    path: '/user',
     router: userRouter,
   },
   {
-    path: "/auth",
+    path: '/auth',
     router: authRouter,
   },
   {
-    path: "/blog",
+    path: '/blog',
     router: blogRouter,
   },
   {
-    path: "/category",
+    path: '/category',
     router: categoryRouter,
   },
   {
-    path: "/shop",
+    path: '/shop',
     router: shopRouter,
   },
   {
-    path: "/product",
+    path: '/product',
     router: productRouter,
   },
   {
-    path: "/request-product",
+    path: '/request-product',
     router: requestProduct,
   },
   {
-    path: "/assigned-product",
+    path: '/assigned-product',
     router: assignedProduct,
   },
   {
-    path: "/contract",
+    path: '/contract',
     router: sendMessageRouter,
   },
   {
-    path: "/payment",
+    path: '/payment',
     router: paymentRouter,
   },
   {
-    path: "/employee",
+    path: '/employee',
     router: employeeRouter,
   },
-];
+  {
+    path: '/subscription-plan',
+    router: subscriptionPlanRouter,
+  },
+]
 
 moduleRouter.forEach((route) => {
   router.use(route.path, route.router);

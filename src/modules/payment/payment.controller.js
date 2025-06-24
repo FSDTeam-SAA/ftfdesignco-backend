@@ -1,6 +1,6 @@
 const Stripe = require('stripe')
-const { Payment } = require('./payment.model')
 
+const { Payment } = require('../payment/payment.model')
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-05-28.basil',
