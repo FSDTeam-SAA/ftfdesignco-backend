@@ -11,6 +11,9 @@ const sendMessageRouter = require("../modules/contract/contract.router");
 const paymentRouter = require("../modules/payment/payment.routes");
 const employeeRouter = require("../modules/employee/employee.router");
 const subscriptionPlanRouter = require('../modules/subscriptionPlan/subscriptionPlan.route')
+const newsLetterRouter = require('../modules/newsLetter/newsLetter.routes')
+
+
 const { path } = require("../app");
 
 const router = Router();
@@ -63,6 +66,10 @@ const moduleRouter = [
   {
     path: '/subscription-plan',
     router: subscriptionPlanRouter,
+  },
+  {
+    path: '/newsletter',
+    router: newsLetterRouter,
   },
 ]
 
