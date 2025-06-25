@@ -34,8 +34,33 @@ const getMyEmployees = async (req, res) => {
   }
 };
 
+//TODO:1 employee profile updated is not added...........
+
+const employeeCoinGive = async (req, res) => {
+  try {
+    const { email } = req.user;
+    const { employeeId } = req.params;
+    const result = await employeeService.employeeCoinGive(
+      email,
+      req.body,
+      employeeId
+    );
+
+    return res.status(200).json({
+      status: true,
+      code: 200,
+      message: "Coin given successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error giving coin:", error);
+    res.status(500).json({ status: false, code: 500, message: error.message });
+  }
+};
+
 const employeeController = {
   createEmployee,
   getMyEmployees,
+  employeeCoinGive,
 };
 module.exports = employeeController;

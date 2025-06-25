@@ -77,14 +77,48 @@ const getMyEmployees = async (email) => {
   if (!user.shop) throw new Error("Shop not found");
 
   const employees = await Employee.find({ shop: user.shop._id })
-    .populate({ path: "shop", select: "companyName" })
+    .populate({ path: "shop", select: "companyName companyId" })
     .populate({ path: "userId", select: "name email" });
 
   return employees;
 };
 
+const employeeCoinGive = async (email, payload, employeeId) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found");
+
+  if (!user.isShopCreated) {
+    throw new Error("You need to create a shop first");
+  }
+  if (!user.shop) throw new Error("Shop not found");
+
+  const employee = await Employee.findById(employeeId);
+  if (!employee) throw new Error("Employee not found");
+
+  if (!employee.userId.equals(user._id)) {
+    throw new Error("You are not the owner of this employee");
+  }
+
+  const result = await Employee.findByIdAndUpdate(
+    employeeId,
+    { $inc: { coin: payload.coin } },
+    { new: true }
+  )
+    .populate({
+      path: "shop",
+      select: "companyName companyId",
+    })
+    .populate({
+      path: "userId",
+      select: "name email",
+    });
+
+  return result;
+};
+
 const employeeService = {
   createEmployeeInDb,
   getMyEmployees,
+  employeeCoinGive,
 };
 module.exports = employeeService;

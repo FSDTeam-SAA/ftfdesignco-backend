@@ -24,9 +24,26 @@ const employeeModel = new Schema({
     type: Boolean,
     default: true,
   },
+  country: {
+    type: String,
+  },
+  city: {
+    type: String,
+  },
+  roadOrArea: {
+    type: String,
+  },
+  imageLink: { type: String, default: null },
+  phone: {
+    type: String,
+  },
   role: {
     type: String,
     default: "employee",
+  },
+  coin: {
+    type: Number,
+    default: 0,
   },
   shop: {
     type: Schema.Types.ObjectId,
