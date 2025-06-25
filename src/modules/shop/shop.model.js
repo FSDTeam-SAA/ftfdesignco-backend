@@ -39,7 +39,6 @@ const shopModel = new Schema(
     },
     subscriptionStartDate: {
       type: Date,
-      default: Date.now,
     },
     subscriptionEndDate: {
       type: Date,
