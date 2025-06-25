@@ -6,7 +6,7 @@ const subscriptionPlanSchema = new Schema(
       type: String,
       enum: ["Basic", "Standard", "Premium"],
       required: true,
-      unique: true,
+      // unique: true,
     },
     description: {
       type: String,
