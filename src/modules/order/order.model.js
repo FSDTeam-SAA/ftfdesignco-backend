@@ -4,7 +4,7 @@ const OrderModel = Schema({
   employeeId: {
     type: Schema.Types.ObjectId,
     ref: "Employee",
-    required: true,
+    // required: true,
   },
   productId: {
     type: Schema.Types.ObjectId,
@@ -14,7 +14,12 @@ const OrderModel = Schema({
   shopId: {
     type: Schema.Types.ObjectId,
     ref: "Shop",
-    required: true,
+    // required: true,
+  },
+  status: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending",
   },
 });
 
