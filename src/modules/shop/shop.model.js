@@ -5,7 +5,6 @@ const shopModel = new Schema(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      //   required: true,
     },
     companyId: {
       type: String,
@@ -44,6 +43,14 @@ const shopModel = new Schema(
       type: Date,
     },
     subscriptionEmployees: {
+      type: Number,
+      default: 0,
+    },
+    totalGivenCoin: {
+      type: Number,
+      default: 0,
+    },
+    totalUsedCoin: {
       type: Number,
       default: 0,
     },

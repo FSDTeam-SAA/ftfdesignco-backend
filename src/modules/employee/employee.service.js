@@ -90,7 +90,9 @@ const employeeCoinGive = async (email, payload, employeeId) => {
   if (!user.isShopCreated) {
     throw new Error("You need to create a shop first");
   }
-  if (!user.shop) throw new Error("Shop not found");
+
+  const shop = await Shop.findById(user.shop);
+  if (!shop) throw new Error("Shop not found");
 
   const employee = await Employee.findById(employeeId);
   if (!employee) throw new Error("Employee not found");
@@ -112,6 +114,12 @@ const employeeCoinGive = async (email, payload, employeeId) => {
       path: "userId",
       select: "name email",
     });
+
+  await Shop.findByIdAndUpdate(
+    shop._id,
+    { $inc: { totalGivenCoin: payload.coin } },
+    { new: true }
+  );
 
   return result;
 };
