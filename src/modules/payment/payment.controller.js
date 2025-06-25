@@ -1,19 +1,27 @@
 const Stripe = require("stripe");
 
 const { Payment } = require("../payment/payment.model");
+const User = require("../user/user.model");
+const Shop = require("../shop/shop.model");
+const SubscriptionPlan = require("../subscriptionPlan/subscriptionPlan.model");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2025-05-28.basil",
 });
 
 const createPayment = async (req, res) => {
-  const { userId, planId, orderId, amount } = req.body;
+  const { userId } = req.user;
+  const { planId, orderId, amount } = req.body;
 
-  if (!userId || !amount) {
-    res.status(400).json({
-      error: "userId and amount are required.",
+  if (!amount) {
+    return res.status(400).json({
+      error: "Amount is required.",
     });
-    return;
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
   }
 
   try {
@@ -37,19 +45,61 @@ const createPayment = async (req, res) => {
     });
     await paymentInfo.save();
 
+    if (user.role === "company_admin") {
+      const shop = await Shop.findById(user.shop);
+      if (!shop) {
+        return res.status(404).json({ error: "Shop not found" });
+      }
+
+      const plan = await SubscriptionPlan.findById(planId);
+      if (!plan) {
+        return res.status(404).json({ error: "Subscription plan not found" });
+      }
+
+      const now = new Date();
+      let baseDate = now;
+
+      if (shop.subscriptionEndDate && shop.subscriptionEndDate > now) {
+        baseDate = new Date(shop.subscriptionEndDate);
+      }
+
+      let newEndDate = new Date(baseDate);
+
+      if (plan.billingCycle === "monthly") {
+        newEndDate.setMonth(newEndDate.getMonth() + 1);
+      } else if (plan.billingCycle === "yearly") {
+        newEndDate.setFullYear(newEndDate.getFullYear() + 1);
+      } else {
+        return res.status(400).json({ error: "Invalid billing cycle on plan" });
+      }
+
+      // ✅ Update shop subscription info
+      shop.subscriptionPlan = planId;
+      shop.subscriptionStartDate = shop.subscriptionStartDate || now; 
+      shop.subscriptionEndDate = newEndDate;
+      shop.subscriptionEmployees =
+        (shop.subscriptionEmployees || 0) + plan.maxEmployees;
+
+      await shop.save();
+    }
+
     res.status(200).json({
       success: true,
+      code: 200,
       clientSecret: paymentIntent.client_secret,
-      message: "PaymentIntent created.",
+      message: "PaymentIntent created successfully",
     });
   } catch (error) {
     console.error("Error creating PaymentIntent:", error);
     res.status(500).json({
       success: false,
-      error: "Internal server error.",
+      code: 500,
+      message: "Failed to create PaymentIntent",
+      error: error.message,
     });
   }
 };
+
 
 const confirmPayment = async (req, res) => {
   const { paymentIntentId } = req.body;

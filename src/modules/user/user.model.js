@@ -47,7 +47,7 @@ const userModel = new Schema(
     employeeCount: {
       type: Number,
       default: 0,
-    },
+    }
   },
   { timestamps: true, versionKey: false }
 );

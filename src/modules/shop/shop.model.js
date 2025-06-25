@@ -33,6 +33,21 @@ const shopModel = new Schema(
       enum: ["approved", "pending", "rejected"],
       default: "pending",
     },
+    subscriptionPlan: {
+      type: Schema.Types.ObjectId,
+      ref: "SubscriptionPlan",
+    },
+    subscriptionStartDate: {
+      type: Date,
+      default: Date.now,
+    },
+    subscriptionEndDate: {
+      type: Date,
+    },
+    subscriptionEmployees: {
+      type: Number,
+      default: 0,
+    },
     products: [
       {
         productId: {

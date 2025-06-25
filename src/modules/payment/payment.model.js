@@ -5,9 +5,11 @@ const paymentSchema = new mongoose.Schema({
   planId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "SubscriptionPlan",
-    required: true,
   },
-  orderId: { type: mongoose.Schema.Types.ObjectId },
+  orderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Order",
+  },
   amount: { type: Number },
   transactionId: { type: String },
   status: {
