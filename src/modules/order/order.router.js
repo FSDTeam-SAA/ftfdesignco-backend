@@ -11,7 +11,20 @@ router.post(
   orderController.orderProduct
 );
 
-router.get("/", auth(USER_ROLE.employee), orderController.getMyOrder);
+router.get("/my-order", auth(USER_ROLE.employee), orderController.getMyOrder);
+router.get("/", auth(USER_ROLE.admin), orderController.getAllOrders);
+
+router.get(
+  "/all-orders",
+  auth(USER_ROLE.company_admin),
+  orderController.getAllOrdersFromShop
+);
+
+router.put(
+  "/status/:orderId",
+  // auth(USER_ROLE.company_admin),
+  orderController.placeOrderStatus
+);
 
 const orderRouter = router;
 module.exports = orderRouter;

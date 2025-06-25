@@ -1,6 +1,7 @@
 const Employee = require("../employee/employee.model");
 const Product = require("../product/product.model");
 const Shop = require("../shop/shop.model");
+const User = require("../user/user.model");
 const Order = require("./order.model");
 
 const orderProduct = async (payload, employeeId) => {
@@ -78,9 +79,68 @@ const getMyOrders = async (employeeId) => {
   return result;
 };
 
+const getAllOrdersFromShop = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found.");
+
+  const shop = await Shop.findById(user.shop);
+  if (!shop) throw new Error("Shop not found.");
+
+  const result = await Order.find({ shopId: shop._id })
+    .populate({
+      path: "employeeId",
+      select: "name employeeId",
+    })
+    .populate({
+      path: "productId",
+      select: "title price",
+    })
+    .populate({
+      path: "shopId",
+      select: "companyName companyId",
+    });
+
+  return result;
+};
+
+const getAllOrders = async () => {
+  const result = await Order.find()
+    .populate({
+      path: "employeeId",
+      select: "name employeeId",
+    })
+    .populate({
+      path: "productId",
+      select: "title price",
+    })
+    .populate({
+      path: "shopId",
+      select: "companyName companyId",
+    });
+
+  return result;
+};
+
+const placeOrderStatus = async (orderId, payload) => {
+  const { status } = payload;
+
+  const result = await Order.findOneAndUpdate(
+    { _id: orderId },
+    { status },
+    {
+      new: true,
+    }
+  );
+
+  return result;
+};
+
 const orderService = {
   orderProduct,
   getMyOrders,
+  getAllOrdersFromShop,
+  getAllOrders,
+  placeOrderStatus,
 };
 
 module.exports = orderService;
