@@ -1,3 +1,5 @@
+const { Payment } = require("../payment/payment.model");
+const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
 const Employee = require("./employee.model");
 
@@ -6,41 +8,60 @@ const createEmployeeInDb = async (email, payload) => {
   if (!user) throw new Error("User not found");
 
   if (!user.isShopCreated) {
-    throw new Error("You need to create a shop first");
+    throw new Error("You need to create a shop first.");
   }
-  if (!user.shop) throw new Error("Shop not found");
 
-  //TODO: where check purchase plan how many employees can be added.
+  const shop = await Shop.findById(user.shop);
+  if (!shop) throw new Error("Shop not found.");
+
+  if (!shop.status === "approved") {
+    throw new Error("Shop is not approved yet.");
+  }
+
+  const payment = await Payment.findOne({ userId: user._id });
+  if (!payment) throw new Error("Payment not found.");
+
+  if (payment.status !== "success") {
+    throw new Error("Payment is not success.");
+  }
+
+  const now = new Date();
+  if (shop.subscriptionEndDate && shop.subscriptionEndDate < now) {
+    throw new Error("Your subscription has expired. Please renew your plan.");
+  }
+
+  const totalEmployee = await User.findOne({ email }).select("employeeCount");
+  if (totalEmployee.employeeCount >= shop.subscriptionEmployees) {
+    throw new Error("You have to rach your subscription limit.");
+  }
 
   const isExistEmployee = await Employee.findOne({ email: payload.email });
   if (isExistEmployee) {
-    throw new Error("Employee is already exists");
+    throw new Error("Employee with this email already exists.");
   }
 
   const isExistEmployeeId = await Employee.findOne({
     employeeId: payload.employeeId,
   });
   if (isExistEmployeeId) {
-    throw new Error("Employee ID is already exists");
+    throw new Error(`Employee ${payload.employeeId} already exists`);
   }
 
   const newEmployee = await Employee.create({
     ...payload,
-    shop: user?.shop._id,
+    shop: shop._id,
     userId: user._id,
   });
+
+  await User.findByIdAndUpdate(
+    user._id,
+    { $inc: { employeeCount: 1 } },
+    { new: true }
+  );
 
   const result = await Employee.findById(newEmployee._id)
     .populate({ path: "shop", select: "companyName" })
     .populate({ path: "userId", select: "name email" });
-
-  await User.findByIdAndUpdate(
-    user._id,
-    {
-      $inc: { employeeCount: 1 },
-    },
-    { new: true }
-  );
 
   return result;
 };
