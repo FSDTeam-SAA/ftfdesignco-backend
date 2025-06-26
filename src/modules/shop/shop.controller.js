@@ -97,10 +97,10 @@ const getAllShops = async (req, res) => {
 
 const addProductInShop = async (req, res) => {
   try {
-    const { productId } = req.body;
+    const { productId, coin } = req.body;
     const { email } = req.user;
 
-    const result = await shopService.addProductToShop(productId, email);
+    const result = await shopService.addProductToShop(productId, coin, email);
 
     return res.status(200).json({
       success: true,

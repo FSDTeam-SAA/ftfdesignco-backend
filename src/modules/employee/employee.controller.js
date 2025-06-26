@@ -34,8 +34,6 @@ const getMyEmployees = async (req, res) => {
   }
 };
 
-//TODO:1 employee profile updated is not added...........
-
 const employeeCoinGive = async (req, res) => {
   try {
     const { email } = req.user;
@@ -58,9 +56,18 @@ const employeeCoinGive = async (req, res) => {
   }
 };
 
+const updateEmployeeProfile = async (req, res) => {
+  try {
+    
+  } catch (error) {
+    
+  }
+};
+
 const employeeController = {
   createEmployee,
   getMyEmployees,
   employeeCoinGive,
+  updateEmployeeProfile,
 };
 module.exports = employeeController;
