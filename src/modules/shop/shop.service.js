@@ -130,7 +130,7 @@ const getAllShops = async () => {
 };
 
 //TODO: there are some logic to be added here and some polishing also add.[ don't change there anything.]............
-const addProductToShop = async (productId, email) => {
+const addProductToShop = async (productId, coin, email) => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("User not found");
 
@@ -150,7 +150,11 @@ const addProductToShop = async (productId, email) => {
 
   const updatedShop = await Shop.findByIdAndUpdate(
     shop._id,
-    { $push: { products: { productId, productQuantity: product.quantity } } },
+    {
+      $push: {
+        products: { productId, productQuantity: product.quantity, coin: coin },
+      },
+    },
     { new: true }
   ).populate([
     {
