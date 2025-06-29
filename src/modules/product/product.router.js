@@ -38,7 +38,7 @@ router.get(
 );
 router.get(
   "/:productId",
-  auth(USER_ROLE.admin, USER_ROLE.user),
+  // auth(USER_ROLE.admin, USER_ROLE.user),
   getProductById
 );
 
