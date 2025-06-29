@@ -33,7 +33,7 @@ router.post(
 
 router.get(
   "/get-all",
-  auth(USER_ROLE.admin, USER_ROLE.company_admin),
+  // auth(USER_ROLE.admin, USER_ROLE.company_admin),
   getAllProducts
 );
 router.get(
