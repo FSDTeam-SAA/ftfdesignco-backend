@@ -20,7 +20,7 @@ router.post(
 //get all blogs
 router.get(
     "/",
-    auth(USER_ROLE.admin, USER_ROLE.user),
+    // auth(USER_ROLE.admin, USER_ROLE.user),
     getAllBlog
 );
 

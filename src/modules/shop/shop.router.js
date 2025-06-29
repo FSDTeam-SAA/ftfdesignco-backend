@@ -41,7 +41,8 @@ router.get(
   shopController.shopDetails
 );
 
-router.get("/", auth(USER_ROLE.admin), shopController.getAllShops);
+// router.get("/", auth(USER_ROLE.admin), shopController.getAllShops);
+router.get("/", shopController.getAllShops);
 
 router.put(
   "/:shopId",

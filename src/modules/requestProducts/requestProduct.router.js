@@ -13,7 +13,7 @@ router.post(
 
 router.get(
   "/",
-  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  // auth(USER_ROLE.company_admin, USER_ROLE.admin),
   requestProductController.getAllRequestProducts
 );
 
