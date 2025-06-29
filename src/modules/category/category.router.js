@@ -38,7 +38,7 @@ router.get(
 
 router.get(
   "/:categoryId",
-  auth(USER_ROLE.admin, USER_ROLE.employee, USER_ROLE.company_admin),
+  // auth(USER_ROLE.admin, USER_ROLE.employee, USER_ROLE.company_admin),
   getCategoryById
 );
 
