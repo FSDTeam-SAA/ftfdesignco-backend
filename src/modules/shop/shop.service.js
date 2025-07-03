@@ -90,6 +90,9 @@ const toggleShopStatus = async (payload, shopId) => {
   const shop = await Shop.findById(shopId);
   if (!shop) throw new Error("Shop not found");
 
+  const user = await User.findById(shop.userId);
+  if (!user) throw new Error("User not found");
+
   const allowedStatuses = ["approved", "pending", "rejected"];
 
   if (!payload.status || !allowedStatuses.includes(payload.status)) {
@@ -105,6 +108,14 @@ const toggleShopStatus = async (payload, shopId) => {
     select:
       "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
   });
+
+  await User.findOneAndUpdate(
+    { email: user.email },
+    { $set: { role: "company_admin" } },
+    {
+      new: true,
+    }
+  );
 
   return result;
 };

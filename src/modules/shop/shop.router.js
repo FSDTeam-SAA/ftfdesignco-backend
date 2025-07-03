@@ -8,7 +8,7 @@ const router = Router();
 
 router.post(
   "/create",
-  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  auth(USER_ROLE.company_admin, USER_ROLE.admin, USER_ROLE.user),
   upload.fields([
     { name: "companyLogo", maxCount: 1 },
     { name: "companyBanner", maxCount: 1 },
@@ -37,7 +37,7 @@ router.get(
 
 router.get(
   "/:shopId",
-  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  auth(USER_ROLE.company_admin, USER_ROLE.admin, USER_ROLE.user),
   shopController.shopDetails
 );
 
@@ -46,7 +46,7 @@ router.get("/", shopController.getAllShops);
 
 router.put(
   "/:shopId",
-  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  auth(USER_ROLE.company_admin, USER_ROLE.admin, USER_ROLE.user),
   shopController.toggleShopStatus
 );
 

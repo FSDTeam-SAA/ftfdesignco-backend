@@ -1,4 +1,3 @@
-const { default: mongoose } = require("mongoose");
 const { Payment } = require("../payment/payment.model");
 const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
@@ -20,7 +19,7 @@ const createEmployeeInDb = async (email, payload) => {
   }
 
   const payment = await Payment.findOne({ userId: user._id });
-  if (!payment) throw new Error("Payment not found.");
+  if (!payment) throw new Error("Please buy a subscription");
 
   if (payment.status !== "success") {
     throw new Error("Payment is not success.");
