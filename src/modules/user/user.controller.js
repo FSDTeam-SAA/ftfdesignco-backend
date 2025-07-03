@@ -16,7 +16,7 @@ const createNewAccount = async (req, res) => {
     return res.status(200).json({
       success: true,
       code: 200,
-      message: "User created successfully, please verify your email",
+      message: "Please verify your email",
       data: {
         accessToken,
         user,

@@ -58,10 +58,7 @@ const employeeCoinGive = async (req, res) => {
 
 const updateEmployeeProfile = async (req, res) => {
   try {
-    
-  } catch (error) {
-    
-  }
+  } catch (error) {}
 };
 
 const employeeController = {
