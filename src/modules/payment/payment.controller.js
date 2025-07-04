@@ -75,7 +75,7 @@ const createPayment = async (req, res) => {
 
       // ✅ Update shop subscription info
       shop.subscriptionPlan = planId;
-      shop.subscriptionStartDate = shop.subscriptionStartDate || now; 
+      shop.subscriptionStartDate = shop.subscriptionStartDate || now;
       shop.subscriptionEndDate = newEndDate;
       shop.subscriptionEmployees =
         (shop.subscriptionEmployees || 0) + plan.maxEmployees;
@@ -100,14 +100,55 @@ const createPayment = async (req, res) => {
   }
 };
 
+// const confirmPayment = async (req, res) => {
+//   const { paymentIntentId } = req.body;
+
+//   if (!paymentIntentId) {
+//     res.status(400).json({
+//       error: "paymentIntentId is required.",
+//     });
+//     return;
+//   }
+
+//   try {
+//     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+//     if (paymentIntent.status === "succeeded") {
+//       await Payment.findOneAndUpdate(
+//         { transactionId: paymentIntentId },
+//         { status: "success" }
+//       );
+
+//       res.status(200).json({
+//         success: true,
+//         message: "Payment successfully captured.",
+//         paymentIntent,
+//       });
+//     } else {
+//       await Payment.findOneAndUpdate(
+//         { transactionId: paymentIntentId },
+//         { status: "failed" }
+//       );
+
+//       res.status(400).json({
+//         error: "Payment was not successful.",
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error confirming payment:", error);
+//     res.status(500).json({
+//       success: false,
+//       code: 500,
+//       error: "Internal server error.",
+//     });
+//   }
+// };
 
 const confirmPayment = async (req, res) => {
   const { paymentIntentId } = req.body;
 
   if (!paymentIntentId) {
-    res.status(400).json({
-      error: "paymentIntentId is required.",
-    });
+    res.status(400).json({ error: "paymentIntentId is required." });
     return;
   }
 
@@ -115,10 +156,19 @@ const confirmPayment = async (req, res) => {
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
     if (paymentIntent.status === "succeeded") {
-      await Payment.findOneAndUpdate(
+      const paymentRecord = await Payment.findOneAndUpdate(
         { transactionId: paymentIntentId },
-        { status: "success" }
+        { status: "success" },
+        { new: true }
       );
+
+      if (paymentRecord && paymentRecord.userId) {
+        await User.findOneAndUpdate(
+          { _id: paymentRecord.userId },
+          { $set: { isPaid: true } },
+          { new: true }
+        );
+      }
 
       res.status(200).json({
         success: true,

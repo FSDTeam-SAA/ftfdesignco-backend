@@ -44,6 +44,10 @@ const userModel = new Schema(
       type: Boolean,
       default: false,
     },
+    isPaid: {
+      type: Boolean,
+      default: false,
+    },
     employeeCount: {
       type: Number,
       default: 0,
