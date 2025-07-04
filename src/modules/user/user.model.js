@@ -33,8 +33,8 @@ const userModel = new Schema(
     resetPasswordOtpExpires: { type: Date, default: null },
     role: {
       type: String,
-      enum: ["company_admin", "admin", "user"],
-      default: "user",
+      enum: ["company_admin", "admin"],
+      default: "company_admin",
     },
     shop: {
       type: Schema.Types.ObjectId,
