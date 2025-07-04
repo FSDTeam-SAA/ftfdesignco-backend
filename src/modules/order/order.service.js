@@ -4,11 +4,16 @@ const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
 const Order = require("./order.model");
 
+//There are some logic problem in this function.... i cann't add logic employee is under vaild shop or not and product is under valid shop or not.
 const orderProduct = async (payload, employeeId) => {
   const { productId, shopId } = payload;
 
   const employee = await Employee.findOne({ employeeId });
   if (!employee) throw new Error("Employee not found.");
+
+  if (employee.shop !== shopId) {
+    throw new Error("You are not employee under this company.");
+  }
 
   const product = await Product.findById(productId);
   if (!product) throw new Error("Product not found.");
@@ -30,6 +35,10 @@ const orderProduct = async (payload, employeeId) => {
 
   if (shop.totalGivenCoin < shopProduct.coin) {
     throw new Error("You don't have enough coins.");
+  }
+
+  if (shopProduct._id !== product._id) {
+    throw new Error("Product not found in shop stock.");
   }
 
   const result = await Order.create({
