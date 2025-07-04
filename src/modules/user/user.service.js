@@ -18,7 +18,7 @@ const createNewAccountInDB = async (payload) => {
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedOtp = await bcrypt.hash(otp, 10);
-  const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+  const otpExpires = new Date(Date.now() + 50 * 60 * 1000);
 
   let result;
 
@@ -117,7 +117,7 @@ const resendOtpCode = async ({ email }) => {
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedOtp = await bcrypt.hash(otp, 10);
-  const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+  const otpExpires = new Date(Date.now() + 50 * 60 * 1000);
 
   const result = await User.findOneAndUpdate(
     { email },
