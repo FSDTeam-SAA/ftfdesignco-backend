@@ -1,6 +1,7 @@
 const { sendImageToCloudinary } = require("../../utils/cloudnary");
 const AssignedProduct = require("../assignedProduct/assignedProduct.model");
 const Employee = require("../employee/employee.model");
+const { Payment } = require("../payment/payment.model");
 const Product = require("../product/product.model");
 const User = require("../user/user.model");
 const Shop = require("./shop.model");
@@ -23,6 +24,15 @@ const crateShopInDb = async (payload, email, files) => {
     email: user.email,
   });
   if (employee) throw new Error("You are already an employee");
+
+  const payment = await Payment.findOne({ userId: user._id });
+  if (!payment) throw new Error("Please buy a subscription");
+
+  if (payment.status !== "success") {
+    throw new Error("Payment is not success.");
+  }
+
+  if (user.isPaid === false) throw new Error("Please buy a subscription");
 
   // TODO: After creating a plan, the user can create a shop...[you have to add a field in the user schema for isPayed]
 

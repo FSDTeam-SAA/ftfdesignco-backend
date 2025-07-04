@@ -168,6 +168,25 @@ exports.updateCategory = async (req, res) => {
   }
 };
 
+exports.getCategoryProducts = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const products = await Product.find({ category: categoryId });
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Category products fetched successfully",
+      data: products,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      code: 500,
+      message: error.message,
+    });
+  }
+};
+
 //TODO:3. Deleted category there are some logic problem ............
 exports.deleteCategory = async (req, res) => {
   try {
@@ -181,6 +200,14 @@ exports.deleteCategory = async (req, res) => {
     if (product) {
       throw new Error("Category is associated with a product");
     }
+
+    await Category.findByIdAndDelete(categoryId);
+
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Category deleted successfully",
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
