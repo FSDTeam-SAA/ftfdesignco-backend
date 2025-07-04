@@ -232,7 +232,16 @@ const changePassword = async (payload, email) => {
 const employeeLogin = async (payload) => {
   const employee = await Employee.findOne({
     employeeId: payload.employeeId,
-  }).select("+password");
+  })
+    .select("+password")
+    .populate({
+      path: "shop",
+      select: "companyId companyName",
+    })
+    .populate({
+      path: "userId",
+      select: "name email",
+    });
 
   if (!employee) {
     throw new Error("Employee not found");
@@ -277,7 +286,6 @@ const employeeLogin = async (payload) => {
     needPasswordChange: employee.needPasswordChange,
   };
 };
-
 
 const changeEmployeePassword = async (payload, employeeId) => {
   const employee = await Employee.findOne({ employeeId }).select("+password");
