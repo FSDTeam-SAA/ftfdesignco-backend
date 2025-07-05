@@ -150,65 +150,64 @@ const getAllShops = async () => {
 };
 
 //TODO: there are some logic to be added here and some polishing also add.[ don't change there anything.]............
-const addProductToShop = async (productId, email) => {
-  const user = await User.findOne({ email });
-  if (!user) throw new Error("User not found");
-  console.log(user);
+// const addProductToShop = async (productId, email) => {
+//   const user = await User.findOne({ email });
+//   if (!user) throw new Error("User not found");
 
-  if (user.isPaid === false) throw new Error("Please buy a subscription");
+//   if (user.isPaid === false) throw new Error("Please buy a subscription");
 
-  const shop = await Shop.findById(user.shop);
-  if (!shop) throw new Error("Shop not found");
+//   const shop = await Shop.findById(user.shop);
+//   if (!shop) throw new Error("Shop not found");
 
-  if (!user.isShopCreated) {
-    throw new Error("Shop is not created yet");
-  }
+//   if (!user.isShopCreated) {
+//     throw new Error("Shop is not created yet");
+//   }
 
-  if (!shop.status || shop.status !== "approved") {
-    throw new Error("Shop is not approved yet");
-  }
+//   if (!shop.status || shop.status !== "approved") {
+//     throw new Error("Shop is not approved yet");
+//   }
 
-  const product = await Product.findById(productId);
-  if (!product) throw new Error("Product not found");
+//   const product = await Product.findById(productId);
+//   if (!product) throw new Error("Product not found");
 
-  if (product.quantity <= 0) {
-    throw new Error("Product is out of stock");
-  }
+//   if (product.quantity <= 0) {
+//     throw new Error("Product is out of stock");
+//   }
 
-  if (shop.products.find((p) => p.productId.equals(product._id))) {
-    throw new Error("Product already added to the shop");
-  }
+//   if (shop.products.find((p) => p.productId.equals(product._id))) {
+//     throw new Error("Product already added to the shop");
+//   }
 
-  const updatedShop = await Shop.findByIdAndUpdate(
-    shop._id,
-    {
-      $push: {
-        products: { productId, productQuantity: product.quantity },
-      },
-    },
-    { new: true }
-  ).populate([
-    {
-      path: "userId",
-      select: "name email shop",
-    },
-    {
-      path: "products.productId",
-      populate: {
-        path: "category",
-        select: "title",
-      },
-    },
-  ]);
+//   const updatedShop = await Shop.findByIdAndUpdate(
+//     shop._id,
+//     {
+//       $push: {
+//         products: { productId, productQuantity: product.quantity },
+//       },
+//     },
+//     { new: true }
+//   ).populate([
+//     {
+//       path: "userId",
+//       select: "name email shop",
+//     },
+//     {
+//       path: "products.productId",
+//       populate: {
+//         path: "category",
+//         select: "title",
+//       },
+//     },
+//   ]);
 
-  await AssignedProduct.updateOne(
-    { productId: productId, userId: user._id },
-    { $set: { productId: productId, userId: user._id } },
-    { upsert: true }
-  );
+//   await AssignedProduct.updateOne(
+//     { productId: productId, userId: user._id },
+//     { $set: { productId: productId, userId: user._id } },
+//     { upsert: true }
+//   );
 
-  return updatedShop;
-};
+//   return updatedShop;
+// };
 
 const shopService = {
   crateShopInDb,
@@ -216,7 +215,7 @@ const shopService = {
   toggleShopStatus,
   getShopDetails,
   getAllShops,
-  addProductToShop,
+  // addProductToShop,
 };
 
 module.exports = shopService;

@@ -9,6 +9,7 @@ const {
   getProductById,
   updateProductById,
   deleteProductById,
+  addProductToShop,
 } = require("./product.controller");
 
 router.post(
@@ -64,6 +65,12 @@ router.put(
 );
 
 router.delete("/:productId", auth(USER_ROLE.admin), deleteProductById);
+
+router.post(
+  "/add-product",
+  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  addProductToShop
+);
 
 const productRouter = router;
 module.exports = productRouter;
