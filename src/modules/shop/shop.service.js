@@ -171,6 +171,14 @@ const addProductToShop = async (productId, email) => {
   const product = await Product.findById(productId);
   if (!product) throw new Error("Product not found");
 
+  if (product.quantity <= 0) {
+    throw new Error("Product is out of stock");
+  }
+
+  if (shop.products.find((p) => p.productId.equals(product._id))) {
+    throw new Error("Product already added to the shop");
+  }
+
   const updatedShop = await Shop.findByIdAndUpdate(
     shop._id,
     {
