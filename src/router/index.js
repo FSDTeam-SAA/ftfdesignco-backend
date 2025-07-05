@@ -13,9 +13,8 @@ const employeeRouter = require("../modules/employee/employee.router");
 const subscriptionPlanRouter = require("../modules/subscriptionPlan/subscriptionPlan.route");
 const { path } = require("../app");
 const orderRouter = require("../modules/order/order.router");
+const newsLetterRouter = require("../modules/newsLetter/newsLetter.routes");
 
-
-const { path } = require('../app')
 
 const router = Router()
 
