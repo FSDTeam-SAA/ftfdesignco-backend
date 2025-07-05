@@ -10,6 +10,7 @@ const {
   updateProductById,
   deleteProductById,
   addProductToShop,
+  setCoinForProducts,
 } = require("./product.controller");
 
 router.post(
@@ -70,6 +71,12 @@ router.post(
   "/add-product",
   auth(USER_ROLE.company_admin, USER_ROLE.admin),
   addProductToShop
+);
+
+router.patch(
+  "/add-coin/:productId",
+  auth(USER_ROLE.company_admin),
+  setCoinForProducts
 );
 
 const productRouter = router;

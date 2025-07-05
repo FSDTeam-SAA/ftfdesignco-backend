@@ -344,3 +344,44 @@ exports.addProductToShop = async (req, res) => {
     });
   }
 };
+
+exports.setCoinForProducts = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { productId } = req.params;
+    const { coin } = req.body;
+
+    const product = await Product.findById(productId);
+    if (!product) throw new Error("Product not found");
+
+    const user = await User.findById(userId);
+    if (!user) throw new Error("User not found");
+
+    const shop = await Shop.findOne({
+      _id: user.shop,
+      "products.productId": product._id,
+    });
+    if (!shop) throw new Error("Shop not found with this product");
+
+    const updatedShop = await Shop.findOneAndUpdate(
+      { _id: user.shop, "products.productId": product._id },
+      { $set: { "products.$.coin": coin } },
+      { new: true }
+    );
+
+    if (!updatedShop) throw new Error("Failed to update coin");
+
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Product coin updated successfully",
+      data: updatedShop,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      code: 400,
+      message: error.message,
+    });
+  }
+};
