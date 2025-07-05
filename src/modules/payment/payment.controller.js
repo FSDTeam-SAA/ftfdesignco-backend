@@ -145,13 +145,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 // };
 
 const createPayment = async (req, res) => {
-  const { userId, planId, amount } = req.body;
+  const { userId } = req.user;
+  const { planId, amount } = req.body;
 
-  if (!userId || !amount) {
-    res.status(400).json({
-      error: "userId and amount are required.",
-    });
-    return;
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error("User not found");
   }
 
   try {

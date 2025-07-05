@@ -1,7 +1,6 @@
 const config = require("../config");
 const { verifyToken } = require("../utils/tokenGenerate");
 
-
 const auth = (...roles) => {
   return (req, res, next) => {
     try {
