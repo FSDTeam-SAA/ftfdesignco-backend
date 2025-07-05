@@ -2,6 +2,7 @@ const CategoryModel = require("./category.model");
 const { sendImageToCloudinary } = require("../../utils/cloudnary");
 const User = require("../user/user.model");
 const Category = require("./category.model");
+const Product = require("../product/product.model");
 
 exports.createCategory = async (req, res) => {
   try {
@@ -167,31 +168,41 @@ exports.updateCategory = async (req, res) => {
   }
 };
 
+exports.getCategoryProducts = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const products = await Product.find({ category: categoryId });
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Category products fetched successfully",
+      data: products,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      code: 500,
+      message: error.message,
+    });
+  }
+};
+
 //TODO:3. Deleted category there are some logic problem ............
 exports.deleteCategory = async (req, res) => {
   try {
-    const { email } = req.user;
     const { categoryId } = req.params;
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        code: 404,
-        message: "User not found",
-      });
+    const category = await Category.findById(categoryId);
+    if (category) {
+      throw new Error("Category not found");
     }
 
-    const existingCategory = await Category.findById(categoryId);
-    if (!existingCategory) {
-      return res.status(404).json({
-        success: false,
-        code: 404,
-        message: "Category not found",
-      });
+    const product = await Product.findOne({ category: categoryId });
+    if (product) {
+      throw new Error("Category is associated with a product");
     }
 
-    await existingCategory.remove();
+    await Category.findByIdAndDelete(categoryId);
+
     return res.status(200).json({
       success: true,
       code: 200,
@@ -201,8 +212,7 @@ exports.deleteCategory = async (req, res) => {
     return res.status(500).json({
       success: false,
       code: 500,
-      message: "Could not delete category",
-      error: error.message,
+      message: error.message,
     });
   }
 };

@@ -1,20 +1,26 @@
-// models/subscriptionPlan.model.js
-
-const { Schema, model } = require('mongoose')
+const { Schema, model } = require("mongoose");
 
 const subscriptionPlanSchema = new Schema(
   {
     title: {
       type: String,
-      required: [true, 'Title is required'],
+      enum: ["Basic", "Standard", "Premium"],
+      required: true,
+      // unique: true,
     },
     description: {
       type: String,
-      required: [true, 'Description is required'],
+      required: [true, "Description is required"],
     },
     price: {
       type: Number,
-      required: [true, 'Price is required'],
+      required: [true, "Price is required"],
+      min: [0, "Price cannot be negative"],
+    },
+    maxEmployees: {
+      type: Number,
+      required: [true, "Maximum number of employees is required"],
+      min: [1, "At least one employee is required"],
     },
     features: {
       type: [String],
@@ -22,12 +28,22 @@ const subscriptionPlanSchema = new Schema(
     },
     billingCycle: {
       type: String,
-      enum: ['monthly', 'yearly'],
-      required: [true, 'Billing cycle is required'],
+      enum: ["monthly", "yearly"],
+      required: [true, "Billing cycle is required"],
     },
+    // subscriptionStartDate: {
+    //   type: Date,
+    // },
+    // subscriptionEndDate: {
+    //   type: Date,
+    // },
+    // subscriptionEmployees: {
+    //   type: Number,
+    //   default: 0,
+    // },
   },
   { timestamps: true, versionKey: false }
-)
+);
 
-const SubscriptionPlan = model('SubscriptionPlan', subscriptionPlanSchema)
-module.exports = SubscriptionPlan
+const SubscriptionPlan = model("SubscriptionPlan", subscriptionPlanSchema);
+module.exports = SubscriptionPlan;

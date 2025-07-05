@@ -6,6 +6,7 @@ const {
   getAllCategory,
   getCategoryById,
   updateCategory,
+  getCategoryProducts,
 } = require("./category.controller");
 const auth = require("../../middleware/auth");
 const USER_ROLE = require("../user/user.constant");
@@ -32,14 +33,20 @@ router.post(
 
 router.get(
   "/",
-  auth(USER_ROLE.admin, USER_ROLE.employee, USER_ROLE.company_admin),
+  // auth(USER_ROLE.admin, USER_ROLE.employee, USER_ROLE.company_admin),
   getAllCategory
 );
 
 router.get(
   "/:categoryId",
-  auth(USER_ROLE.admin, USER_ROLE.employee, USER_ROLE.company_admin),
+  // auth(USER_ROLE.admin, USER_ROLE.employee, USER_ROLE.company_admin),
   getCategoryById
+);
+
+router.get(
+  "/categori-products/:categoryId",
+  // auth(USER_ROLE.admin, USER_ROLE.employee, USER_ROLE.company_admin),
+  getCategoryProducts
 );
 
 router.put(

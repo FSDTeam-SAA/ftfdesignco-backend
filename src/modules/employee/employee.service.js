@@ -1,3 +1,6 @@
+const { sendImageToCloudinary } = require("../../utils/cloudnary");
+const { Payment } = require("../payment/payment.model");
+const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
 const Employee = require("./employee.model");
 
@@ -6,41 +9,60 @@ const createEmployeeInDb = async (email, payload) => {
   if (!user) throw new Error("User not found");
 
   if (!user.isShopCreated) {
-    throw new Error("You need to create a shop first");
+    throw new Error("You need to create a shop first.");
   }
-  if (!user.shop) throw new Error("Shop not found");
 
-  //TODO: where check purchase plan how many employees can be added.
+  const shop = await Shop.findById(user.shop);
+  if (!shop) throw new Error("Shop not found.");
+
+  if (!shop.status === "approved") {
+    throw new Error("Shop is not approved yet.");
+  }
+
+  const payment = await Payment.findOne({ userId: user._id });
+  if (!payment) throw new Error("Please buy a subscription");
+
+  if (payment.status !== "success") {
+    throw new Error("Payment is not success.");
+  }
+
+  const now = new Date();
+  if (shop.subscriptionEndDate && shop.subscriptionEndDate < now) {
+    throw new Error("Your subscription has expired. Please renew your plan.");
+  }
+
+  const totalEmployee = await User.findOne({ email }).select("employeeCount");
+  if (totalEmployee.employeeCount >= shop.subscriptionEmployees) {
+    throw new Error("You have to rach your subscription limit.");
+  }
 
   const isExistEmployee = await Employee.findOne({ email: payload.email });
   if (isExistEmployee) {
-    throw new Error("Employee is already exists");
+    throw new Error("Employee with this email already exists.");
   }
 
   const isExistEmployeeId = await Employee.findOne({
     employeeId: payload.employeeId,
   });
   if (isExistEmployeeId) {
-    throw new Error("Employee ID is already exists");
+    throw new Error(`Employee ${payload.employeeId} already exists`);
   }
 
   const newEmployee = await Employee.create({
     ...payload,
-    shop: user?.shop._id,
+    shop: shop._id,
     userId: user._id,
   });
 
-  const result = await Employee.findById(newEmployee._id)
-    .populate({ path: "shop", select: "comanyName" })
-    .populate({ path: "userId", select: "name email" });
-
   await User.findByIdAndUpdate(
     user._id,
-    {
-      $inc: { employeeCount: 1 },
-    },
+    { $inc: { employeeCount: 1 } },
     { new: true }
   );
+
+  const result = await Employee.findById(newEmployee._id)
+    .populate({ path: "shop", select: "companyName" })
+    .populate({ path: "userId", select: "name email" });
 
   return result;
 };
@@ -55,14 +77,94 @@ const getMyEmployees = async (email) => {
   if (!user.shop) throw new Error("Shop not found");
 
   const employees = await Employee.find({ shop: user.shop._id })
-    .populate({ path: "shop", select: "comanyName" })
+    .populate({ path: "shop", select: "companyName companyId" })
     .populate({ path: "userId", select: "name email" });
 
   return employees;
 };
 
+const employeeCoinGive = async (email, payload, employeeId) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found");
+
+  if (!user.isShopCreated) {
+    throw new Error("You need to create a shop first");
+  }
+
+  const shop = await Shop.findById(user.shop);
+  if (!shop) throw new Error("Shop not found");
+
+  const employee = await Employee.findById(employeeId);
+  if (!employee) throw new Error("Employee not found");
+
+  if (!employee.userId.equals(user._id)) {
+    throw new Error("You are not the owner of this employee");
+  }
+
+  const result = await Employee.findByIdAndUpdate(
+    employeeId,
+    { $inc: { coin: payload.coin } },
+    { new: true }
+  )
+    .populate({
+      path: "shop",
+      select: "companyName companyId",
+    })
+    .populate({
+      path: "userId",
+      select: "name email",
+    });
+
+  await Shop.findByIdAndUpdate(
+    shop._id,
+    { $inc: { totalGivenCoin: payload.coin } },
+    { new: true }
+  );
+
+  return result;
+};
+
+const getEmployeeProfile = async (employeeId) => {
+  const employee = await Employee.findOne({ employeeId }).populate({
+    path: "shop",
+    select: "companyName companyId",
+  });
+  if (!employee) throw new Error("Employee not found.");
+
+  return employee;
+};
+
+const updateEmployeeOwnProfile = async (employeeId, payload, file) => {
+  const employee = await Employee.findOne({ employeeId });
+  if (!employee) throw new Error("Employee not found.");
+
+  if (file) {
+    const imageName = `${Date.now()}-${file.originalname}`;
+    const path = file?.path;
+    const { secure_url } = await sendImageToCloudinary(imageName, path);
+    payload.imageLink = secure_url;
+  }
+
+  const result = await Employee.findByIdAndUpdate(employee._id, payload, {
+    new: true,
+  })
+    .populate({
+      path: "shop",
+      select: "companyName companyId",
+    })
+    .populate({
+      path: "userId",
+      select: "name email",
+    });
+
+  return result;
+};
+
 const employeeService = {
   createEmployeeInDb,
   getMyEmployees,
+  employeeCoinGive,
+  getEmployeeProfile,
+  updateEmployeeOwnProfile,
 };
 module.exports = employeeService;

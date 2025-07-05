@@ -1,5 +1,8 @@
 const { sendImageToCloudinary } = require("../../utils/cloudnary");
+const AssignedProduct = require("../assignedProduct/assignedProduct.model");
 const Category = require("../category/category.model");
+const Shop = require("../shop/shop.model");
+const User = require("../user/user.model");
 const Product = require("./product.model");
 
 exports.addProduct = async (req, res) => {
@@ -81,7 +84,7 @@ exports.getAllProducts = async (req, res) => {
     if (search) {
       filter.$or = [
         { productName: { $regex: search, $options: "i" } },
-        { productDescription: { $regex: search, $options: "i" } }
+        { productDescription: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -137,7 +140,7 @@ exports.getAllProducts = async (req, res) => {
         .limit(limit)
         .sort(sortQuery)
         .populate("category", "title"),
-      Product.countDocuments(filter)
+      Product.countDocuments(filter),
     ]);
 
     return res.status(200).json({
@@ -159,7 +162,6 @@ exports.getAllProducts = async (req, res) => {
     });
   }
 };
-
 
 exports.getProductById = async (req, res) => {
   try {
@@ -242,7 +244,6 @@ exports.updateProductById = async (req, res) => {
   }
 };
 
-
 exports.deleteProductById = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -265,6 +266,122 @@ exports.deleteProductById = async (req, res) => {
       code: 500,
       message: "Failed to delete product",
       error,
+    });
+  }
+};
+
+exports.addProductToShop = async (req, res) => {
+  try {
+    const { productId } = req.body;
+    const { email } = req.user;
+
+    const user = await User.findOne({ email });
+    if (!user) throw new Error("User not found");
+
+    if (user.isPaid === false) throw new Error("Please buy a subscription");
+
+    const shop = await Shop.findById(user.shop);
+    if (!shop) throw new Error("Shop not found");
+
+    if (!user.isShopCreated) {
+      throw new Error("Shop is not created yet");
+    }
+
+    if (!shop.status || shop.status !== "approved") {
+      throw new Error("Shop is not approved yet");
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) throw new Error("Product not found");
+
+    if (product.quantity <= 0) {
+      throw new Error("Product is out of stock");
+    }
+
+    if (shop.products.find((p) => p.productId.equals(product._id))) {
+      throw new Error("Product already added to the shop");
+    }
+
+    const updatedShop = await Shop.findByIdAndUpdate(
+      shop._id,
+      {
+        $push: {
+          products: { productId, productQuantity: product.quantity },
+        },
+      },
+      { new: true }
+    ).populate([
+      {
+        path: "userId",
+        select: "name email shop",
+      },
+      {
+        path: "products.productId",
+        populate: {
+          path: "category",
+          select: "title",
+        },
+      },
+    ]);
+
+    await AssignedProduct.updateOne(
+      { productId: productId, userId: user._id },
+      { $set: { productId: productId, userId: user._id } },
+      { upsert: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Product added to shop successfully",
+      data: updatedShop,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      code: 400,
+      message: error.message,
+    });
+  }
+};
+
+exports.setCoinForProducts = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { productId } = req.params;
+    const { coin } = req.body;
+
+    const product = await Product.findById(productId);
+    if (!product) throw new Error("Product not found");
+
+    const user = await User.findById(userId);
+    if (!user) throw new Error("User not found");
+
+    const shop = await Shop.findOne({
+      _id: user.shop,
+      "products.productId": product._id,
+    });
+    if (!shop) throw new Error("Shop not found with this product");
+
+    const updatedShop = await Shop.findOneAndUpdate(
+      { _id: user.shop, "products.productId": product._id },
+      { $set: { "products.$.coin": coin } },
+      { new: true }
+    );
+
+    if (!updatedShop) throw new Error("Failed to update coin");
+
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Product coin updated successfully",
+      data: updatedShop,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      code: 400,
+      message: error.message,
     });
   }
 };

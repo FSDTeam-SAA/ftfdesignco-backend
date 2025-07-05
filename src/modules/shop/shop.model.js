@@ -5,16 +5,17 @@ const shopModel = new Schema(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      //   required: true,
     },
     companyId: {
       type: String,
       required: true,
+      unique: true,
     },
-    comanyName: {
-      //! when final check fixed it.[and search for comapnyName other router  and fixed correctly]
+    companyName: {
       type: String,
       required: true,
+      trim: true,
+      unique: true,
     },
     companyLogo: {
       type: String,
@@ -31,11 +32,42 @@ const shopModel = new Schema(
       enum: ["approved", "pending", "rejected"],
       default: "pending",
     },
+    subscriptionPlan: {
+      type: Schema.Types.ObjectId,
+      ref: "SubscriptionPlan",
+    },
+    subscriptionStartDate: {
+      type: Date,
+    },
+    subscriptionEndDate: {
+      type: Date,
+    },
+    subscriptionEmployees: {
+      type: Number,
+      default: 0,
+    },
+    totalGivenCoin: {
+      type: Number,
+      default: 0,
+    },
+    totalUsedCoin: {
+      type: Number,
+      default: 0,
+    },
     products: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "Product",
-        default: [],
+        productId: {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
+        },
+        productQuantity: {
+          type: Number,
+          default: 0,
+        },
+        coin: {
+          type: Number,
+          default: 0,
+        },
       },
     ],
   },

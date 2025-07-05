@@ -9,6 +9,8 @@ const {
   getProductById,
   updateProductById,
   deleteProductById,
+  addProductToShop,
+  setCoinForProducts,
 } = require("./product.controller");
 
 router.post(
@@ -33,12 +35,12 @@ router.post(
 
 router.get(
   "/get-all",
-  auth(USER_ROLE.admin, USER_ROLE.company_admin),
+  // auth(USER_ROLE.admin, USER_ROLE.company_admin),
   getAllProducts
 );
 router.get(
   "/:productId",
-  auth(USER_ROLE.admin, USER_ROLE.user),
+  // auth(USER_ROLE.admin, USER_ROLE.user),
   getProductById
 );
 
@@ -64,6 +66,18 @@ router.put(
 );
 
 router.delete("/:productId", auth(USER_ROLE.admin), deleteProductById);
+
+router.post(
+  "/add-product",
+  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  addProductToShop
+);
+
+router.patch(
+  "/add-coin/:productId",
+  auth(USER_ROLE.company_admin),
+  setCoinForProducts
+);
 
 const productRouter = router;
 module.exports = productRouter;
