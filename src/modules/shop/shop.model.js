@@ -65,7 +65,6 @@ const shopModel = new Schema(
           default: 0,
         },
         coin: {
-          //TODO:1 Coin per product it's set by admin.[It's will be changed in future.]
           type: Number,
           default: 0,
         },
