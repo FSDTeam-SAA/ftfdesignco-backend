@@ -1,3 +1,4 @@
+const { sendImageToCloudinary } = require("../../utils/cloudnary");
 const { Payment } = require("../payment/payment.model");
 const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
@@ -123,9 +124,47 @@ const employeeCoinGive = async (email, payload, employeeId) => {
   return result;
 };
 
+const getEmployeeProfile = async (employeeId) => {
+  const employee = await Employee.findOne({ employeeId }).populate({
+    path: "shop",
+    select: "companyName companyId",
+  });
+  if (!employee) throw new Error("Employee not found.");
+
+  return employee;
+};
+
+const updateEmployeeOwnProfile = async (employeeId, payload, file) => {
+  const employee = await Employee.findOne({ employeeId });
+  if (!employee) throw new Error("Employee not found.");
+
+  if (file) {
+    const imageName = `${Date.now()}-${file.originalname}`;
+    const path = file?.path;
+    const { secure_url } = await sendImageToCloudinary(imageName, path);
+    payload.imageLink = secure_url;
+  }
+
+  const result = await Employee.findByIdAndUpdate(employee._id, payload, {
+    new: true,
+  })
+    .populate({
+      path: "shop",
+      select: "companyName companyId",
+    })
+    .populate({
+      path: "userId",
+      select: "name email",
+    });
+
+  return result;
+};
+
 const employeeService = {
   createEmployeeInDb,
   getMyEmployees,
   employeeCoinGive,
+  getEmployeeProfile,
+  updateEmployeeOwnProfile,
 };
 module.exports = employeeService;
