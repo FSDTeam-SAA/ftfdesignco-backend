@@ -31,6 +31,16 @@ const subscriptionPlanSchema = new Schema(
       enum: ["monthly", "yearly"],
       required: [true, "Billing cycle is required"],
     },
+    // subscriptionStartDate: {
+    //   type: Date,
+    // },
+    // subscriptionEndDate: {
+    //   type: Date,
+    // },
+    // subscriptionEmployees: {
+    //   type: Number,
+    //   default: 0,
+    // },
   },
   { timestamps: true, versionKey: false }
 );

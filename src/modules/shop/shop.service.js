@@ -14,6 +14,7 @@ const crateShopInDb = async (payload, email, files) => {
     throw new Error("Please verify your email address first");
 
   if (user.isShopCreated) throw new Error("Shop already created");
+  if (user.isPaid === false) throw new Error("Please buy a subscription");
 
   const isShopExist = await Shop.findOne({
     companyId: payload.companyId,
@@ -25,14 +26,12 @@ const crateShopInDb = async (payload, email, files) => {
   });
   if (employee) throw new Error("You are already an employee");
 
-  const payment = await Payment.findOne({ userId: user._id });
-  if (!payment) throw new Error("Please buy a subscription");
+  // const payment = await Payment.findOne({ userId: user._id });
+  // if (!payment) throw new Error("Please buy a subscription");
 
-  if (payment.status !== "success") {
-    throw new Error("Payment is not success.");
-  }
-
-  if (user.isPaid === false) throw new Error("Please buy a subscription");
+  // if (payment.status !== "success") {
+  //   throw new Error("Payment is not success.");
+  // }
 
   // TODO: After creating a plan, the user can create a shop...[you have to add a field in the user schema for isPayed]
 
@@ -151,9 +150,12 @@ const getAllShops = async () => {
 };
 
 //TODO: there are some logic to be added here and some polishing also add.[ don't change there anything.]............
-const addProductToShop = async (productId, coin, email) => {
+const addProductToShop = async (productId, email) => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("User not found");
+  console.log(user);
+
+  if (user.isPaid === false) throw new Error("Please buy a subscription");
 
   const shop = await Shop.findById(user.shop);
   if (!shop) throw new Error("Shop not found");
@@ -173,7 +175,7 @@ const addProductToShop = async (productId, coin, email) => {
     shop._id,
     {
       $push: {
-        products: { productId, productQuantity: product.quantity, coin: coin },
+        products: { productId, productQuantity: product.quantity },
       },
     },
     { new: true }
