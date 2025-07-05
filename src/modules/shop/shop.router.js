@@ -50,11 +50,11 @@ router.put(
   shopController.toggleShopStatus
 );
 
-router.post(
-  "/add-product",
-  auth(USER_ROLE.company_admin, USER_ROLE.admin),
-  shopController.addProductInShop
-);
+// router.post(
+//   "/add-product",
+//   auth(USER_ROLE.company_admin, USER_ROLE.admin),
+//   shopController.addProductInShop
+// );
 
 const shopRouter = router;
 module.exports = shopRouter;
