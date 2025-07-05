@@ -30,7 +30,7 @@ router.put(
   employeeController.employeeCoinGive
 );
 
-router.put(
+router.patch(
   "/update",
   upload.single("image"),
   (req, res, next) => {
@@ -47,7 +47,7 @@ router.put(
     // If no `data`, req.body remains an empty object or unchanged
     next();
   },
-  // auth(USER_ROLE.employee),
+  auth(USER_ROLE.employee),
   employeeController.updateEmployeeProfile
 );
 
