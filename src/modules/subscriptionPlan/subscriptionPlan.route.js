@@ -16,4 +16,5 @@ router.get("/:id", getSinglePlan);
 router.put("/:id", updatePlan);
 router.delete("/:id", deletePlan);
 
+
 module.exports = router;

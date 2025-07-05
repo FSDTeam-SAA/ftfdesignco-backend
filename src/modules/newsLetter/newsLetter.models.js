@@ -10,4 +10,4 @@ const NewsletterSchema = new Schema(
 
 const Newsletters = mongoose.model('Newsletter', NewsletterSchema);
 
-module.exports = { Newsletters };
+module.exports = Newsletters

@@ -14,7 +14,10 @@ const subscriptionPlanRouter = require("../modules/subscriptionPlan/subscription
 const { path } = require("../app");
 const orderRouter = require("../modules/order/order.router");
 
-const router = Router();
+
+const { path } = require('../app')
+
+const router = Router()
 
 const moduleRouter = [
   {
@@ -69,10 +72,14 @@ const moduleRouter = [
     path: "/order",
     router: orderRouter,
   },
-];
+  {
+    path: '/newsletter',
+    router: newsLetterRouter,
+  },
+]
 
 moduleRouter.forEach((route) => {
-  router.use(route.path, route.router);
-});
+  router.use(route.path, route.router)
+})
 
-module.exports = router;
+module.exports = router

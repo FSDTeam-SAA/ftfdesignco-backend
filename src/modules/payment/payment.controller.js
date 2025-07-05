@@ -148,6 +148,7 @@ const createPayment = async (req, res) => {
   const { userId } = req.user;
   const { planId, amount } = req.body;
 
+
   const user = await User.findById(userId);
   if (!user) {
     throw new Error("User not found");
