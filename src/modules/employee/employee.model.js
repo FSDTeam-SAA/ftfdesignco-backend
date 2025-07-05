@@ -44,6 +44,7 @@ const employeeModel = new Schema({
   coin: {
     type: Number,
     default: 0,
+    min: [0, "Coin cannot be negative"],
   },
   shop: {
     type: Schema.Types.ObjectId,
