@@ -80,16 +80,11 @@ const getShopDetailsByUserId = async (email) => {
   if (!user.isShopCreated) throw new Error("Shop is not created yet");
   if (!user.shop) throw new Error("Shop not found");
 
-  const shop = await Shop.findById(user.shop)
-    .populate({
-      path: "userId",
-      select:
-        "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
-    })
-    .populate({
-      path: "products.productId",
-      select: "title price quantity category",
-    });
+  const shop = await Shop.findById(user.shop).populate({
+    path: "userId",
+    select:
+      "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
+  });
 
   return shop;
 };
@@ -147,8 +142,6 @@ const getAllShops = async () => {
   });
   return result;
 };
-
-
 
 const shopService = {
   crateShopInDb,

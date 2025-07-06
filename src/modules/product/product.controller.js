@@ -298,43 +298,27 @@ exports.addProductToShop = async (req, res) => {
       throw new Error("Product is out of stock");
     }
 
-    if (shop.products.find((p) => p.productId.equals(product._id))) {
-      throw new Error("Product already added to the shop");
+    const isAlreadyExist = await AssignedProduct.findOne({
+      productId: product._id,
+      userId: user._id,
+      shopId: shop._id,
+    });
+
+    if (isAlreadyExist) {
+      throw new Error("Product is already added to your shop");
     }
 
-    const updatedShop = await Shop.findByIdAndUpdate(
-      shop._id,
-      {
-        $push: {
-          products: { productId, productQuantity: product.quantity },
-        },
-      },
-      { new: true }
-    ).populate([
-      {
-        path: "userId",
-        select: "name email shop",
-      },
-      {
-        path: "products.productId",
-        populate: {
-          path: "category",
-          select: "title",
-        },
-      },
-    ]);
-
-    await AssignedProduct.updateOne(
-      { productId: productId, userId: user._id },
-      { $set: { productId: productId, userId: user._id } },
-      { upsert: true }
-    );
+    const result = await AssignedProduct.create({
+      productId: product._id,
+      userId: user._id,
+      shopId: shop._id,
+    });
 
     return res.status(200).json({
       success: true,
       code: 200,
       message: "Product added to shop successfully",
-      data: updatedShop,
+      data: result,
     });
   } catch (error) {
     return res.status(400).json({
@@ -344,6 +328,81 @@ exports.addProductToShop = async (req, res) => {
     });
   }
 };
+
+// exports.addProductToShop = async (req, res) => {
+//   try {
+//     const { productId } = req.body;
+//     const { email } = req.user;
+
+//     const user = await User.findOne({ email });
+//     if (!user) throw new Error("User not found");
+
+//     if (user.isPaid === false) throw new Error("Please buy a subscription");
+
+//     const shop = await Shop.findById(user.shop);
+//     if (!shop) throw new Error("Shop not found");
+
+//     if (!user.isShopCreated) {
+//       throw new Error("Shop is not created yet");
+//     }
+
+//     if (!shop.status || shop.status !== "approved") {
+//       throw new Error("Shop is not approved yet");
+//     }
+
+//     const product = await Product.findById(productId);
+//     if (!product) throw new Error("Product not found");
+
+//     if (product.quantity <= 0) {
+//       throw new Error("Product is out of stock");
+//     }
+
+//     if (shop.products.find((p) => p.productId.equals(product._id))) {
+//       throw new Error("Product already added to the shop");
+//     }
+
+//     const updatedShop = await Shop.findByIdAndUpdate(
+//       shop._id,
+//       {
+//         $push: {
+//           products: { productId, productQuantity: product.quantity },
+//         },
+//       },
+//       { new: true }
+//     ).populate([
+//       {
+//         path: "userId",
+//         select: "name email shop",
+//       },
+//       {
+//         path: "products.productId",
+//         populate: {
+//           path: "category",
+//           select: "title",
+//         },
+//       },
+//     ]);
+
+//     await AssignedProduct.updateOne(
+//       { productId: productId, userId: user._id },
+//       { $set: { productId: productId, userId: user._id } },
+//       { upsert: true }
+//     );
+
+//     return res.status(200).json({
+//       success: true,
+//       code: 200,
+//       message: "Product added to shop successfully",
+//       data: updatedShop,
+//     });
+//   } catch (error) {
+//     return res.status(400).json({
+//       success: false,
+//       code: 400,
+//       message: error.message,
+//     });
+//   }
+// };
 
 exports.setCoinForProducts = async (req, res) => {
   try {
