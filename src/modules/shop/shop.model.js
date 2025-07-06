@@ -68,6 +68,11 @@ const shopModel = new Schema(
           type: Number,
           default: 0,
         },
+        status: {
+          type: String,
+          enum: ["approved", "pending", "rejected"],
+          default: "pending",
+        },
       },
     ],
   },
