@@ -14,6 +14,10 @@ const assignedProduct = new Schema({
     ref: "Shop",
     required: true,
   },
+  coin: {
+    type: Number,
+    default: 0,
+  },
   status: {
     type: String,
     enum: ["pending", "approved", "rejected"],

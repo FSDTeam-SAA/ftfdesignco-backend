@@ -329,71 +329,30 @@ exports.addProductToShop = async (req, res) => {
   }
 };
 
-// exports.addProductToShop = async (req, res) => {
+// exports.setCoinForProducts = async (req, res) => {
 //   try {
-//     const { productId } = req.body;
-//     const { email } = req.user;
+//     const { userId } = req.user;
+//     const { productId } = req.params;
+//     const { coin } = req.body;
 
-//     const user = await User.findOne({ email });
-//     if (!user) throw new Error("User not found");
-
-//     if (user.isPaid === false) throw new Error("Please buy a subscription");
-
-//     const shop = await Shop.findById(user.shop);
-//     if (!shop) throw new Error("Shop not found");
-
-//     if (!user.isShopCreated) {
-//       throw new Error("Shop is not created yet");
-//     }
-
-//     if (!shop.status || shop.status !== "approved") {
-//       throw new Error("Shop is not approved yet");
-//     }
-
-//     const product = await Product.findById(productId);
+//     const product = await AssignedProduct.findById(productId);
 //     if (!product) throw new Error("Product not found");
 
-//     if (product.quantity <= 0) {
-//       throw new Error("Product is out of stock");
+//     if (!product.userId.equals(userId)) {
+//       throw new Error("You are not authorized to set coin for this product");
 //     }
 
-//     if (shop.products.find((p) => p.productId.equals(product._id))) {
-//       throw new Error("Product already added to the shop");
-//     }
-
-//     const updatedShop = await Shop.findByIdAndUpdate(
-//       shop._id,
-//       {
-//         $push: {
-//           products: { productId, productQuantity: product.quantity },
-//         },
-//       },
+//     const result = await AssignedProduct.findByIdAndUpdate(
+//       productId,
+//       { coin },
 //       { new: true }
-//     ).populate([
-//       {
-//         path: "userId",
-//         select: "name email shop",
-//       },
-//       {
-//         path: "products.productId",
-//         populate: {
-//           path: "category",
-//           select: "title",
-//         },
-//       },
-//     ]);
-
-//     await AssignedProduct.updateOne(
-//       { productId: productId, userId: user._id },
-//       { $set: { productId: productId, userId: user._id } },
-//       { upsert: true }
 //     );
 
 //     return res.status(200).json({
 //       success: true,
 //       code: 200,
-//       message: "Product added to shop successfully",
-//       data: updatedShop,
+//       message: "Coin set successfully",
+//       data: result,
 //     });
 //   } catch (error) {
 //     return res.status(400).json({
@@ -403,44 +362,3 @@ exports.addProductToShop = async (req, res) => {
 //     });
 //   }
 // };
-
-exports.setCoinForProducts = async (req, res) => {
-  try {
-    const { userId } = req.user;
-    const { productId } = req.params;
-    const { coin } = req.body;
-
-    const product = await Product.findById(productId);
-    if (!product) throw new Error("Product not found");
-
-    const user = await User.findById(userId);
-    if (!user) throw new Error("User not found");
-
-    const shop = await Shop.findOne({
-      _id: user.shop,
-      "products.productId": product._id,
-    });
-    if (!shop) throw new Error("Shop not found with this product");
-
-    const updatedShop = await Shop.findOneAndUpdate(
-      { _id: user.shop, "products.productId": product._id },
-      { $set: { "products.$.coin": coin } },
-      { new: true }
-    );
-
-    if (!updatedShop) throw new Error("Failed to update coin");
-
-    return res.status(200).json({
-      success: true,
-      code: 200,
-      message: "Product coin updated successfully",
-      data: updatedShop,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-      code: 400,
-      message: error.message,
-    });
-  }
-};

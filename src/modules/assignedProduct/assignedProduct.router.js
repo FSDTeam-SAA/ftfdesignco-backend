@@ -21,8 +21,14 @@ router.put(
 
 router.delete(
   "/:assignedProductId",
-    auth(USER_ROLE.company_admin),
+  auth(USER_ROLE.company_admin),
   assignedProductController.removeProductFromShop
+);
+
+router.put(
+  "/add-coin/:assignedProductId",
+  auth(USER_ROLE.company_admin),
+  assignedProductController.setCoinForProducts
 );
 
 const assignedProduct = router;

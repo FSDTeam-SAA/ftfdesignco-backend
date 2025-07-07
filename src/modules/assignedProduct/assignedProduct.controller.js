@@ -81,10 +81,34 @@ const removeProductFromShop = async (req, res) => {
   }
 };
 
+const setCoinForProducts = async (req, res) => {
+  try {
+    const { email } = req.user;
+    const { assignedProductId } = req.params;
+    const result = await assignedProductService.setCoinForProducts(
+      email,
+      req.body,
+      assignedProductId
+    );
+
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Coin set successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, code: 500, message: error.message });
+  }
+};
+
 const assignedProductController = {
   getAssignedProducts,
   getMyShopAssigndedProducts,
   toggleAssigndedProductStatus,
   removeProductFromShop,
+  setCoinForProducts,
 };
 module.exports = assignedProductController;
