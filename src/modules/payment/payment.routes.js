@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post(
   "/create-payment",
-  // auth(USER_ROLE.admin, USER_ROLE.company_admin, USER_ROLE.user),
+  auth(USER_ROLE.admin, USER_ROLE.company_admin, USER_ROLE.user),
   createPayment
 );
 router.post("/confirm-payment", confirmPayment);

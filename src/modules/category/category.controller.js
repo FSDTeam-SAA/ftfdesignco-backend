@@ -66,34 +66,49 @@ exports.createCategory = async (req, res) => {
   }
 };
 
-//TODO:1 filter, pagination, search, sort othere is not done, i only check all data is working or not
 exports.getAllCategory = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
-  const search = req.query.search || "";
+  const search = req.query.search?.trim() || "";
   const sortOrder = req.query.sort || "latest"; // latest, asc, desc
 
-  const filter = {
-    $or: [{ blogTitle: { $regex: search, $options: "i" } }],
-  };
-
-  let sortBy = { createdAt: -1 }; // Default: latest first
-
-  if (sortOrder === "asc") {
-    sortBy = { blogTitle: 1 }; // A–Z
-  } else if (sortOrder === "desc") {
-    sortBy = { blogTitle: -1 }; // Z–A
+  // 🔍 Filter
+  const filter = {};
+  if (search) {
+    filter.title = { $regex: search, $options: "i" };
   }
+
+  // 🔷 Sort
+  let sortBy = { createdAt: -1 }; // Default: latest
+  if (sortOrder === "asc") {
+    sortBy = { title: 1 }; // A–Z
+  } else if (sortOrder === "desc") {
+    sortBy = { title: -1 }; // Z–A
+  }
+
   try {
-    const categories = await Category.find().skip(skip).limit(limit);
+    const [categories, totalCategories] = await Promise.all([
+      Category.find(filter).skip(skip).limit(limit).sort(sortBy),
+      Category.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(totalCategories / limit);
+
     return res.status(200).json({
       success: true,
       code: 200,
       message: "Categories fetched successfully",
       data: categories,
+      pagination: {
+        totalCategories,
+        currentPage: page,
+        totalPages,
+        limit,
+      },
     });
   } catch (error) {
+    console.error("Get all categories error:", error);
     return res.status(500).json({
       success: false,
       code: 500,
@@ -187,7 +202,7 @@ exports.getCategoryProducts = async (req, res) => {
   }
 };
 
-//TODO:3. Deleted category there are some logic problem ............
+//TODO:3. Deleted category there are some logic problem.if category is under any product then it can't delete.
 exports.deleteCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
