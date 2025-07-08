@@ -1,5 +1,4 @@
 const { sendImageToCloudinary } = require("../../utils/cloudnary");
-const AssignedProduct = require("../assignedProduct/assignedProduct.model");
 const Employee = require("../employee/employee.model");
 const { Payment } = require("../payment/payment.model");
 const Product = require("../product/product.model");
@@ -81,16 +80,11 @@ const getShopDetailsByUserId = async (email) => {
   if (!user.isShopCreated) throw new Error("Shop is not created yet");
   if (!user.shop) throw new Error("Shop not found");
 
-  const shop = await Shop.findById(user.shop)
-    .populate({
-      path: "userId",
-      select:
-        "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
-    })
-    .populate({
-      path: "products.productId",
-      select: "title price quantity category",
-    });
+  const shop = await Shop.findById(user.shop).populate({
+    path: "userId",
+    select:
+      "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
+  });
 
   return shop;
 };
@@ -149,73 +143,12 @@ const getAllShops = async () => {
   return result;
 };
 
-//TODO: there are some logic to be added here and some polishing also add.[ don't change there anything.]............
-// const addProductToShop = async (productId, email) => {
-//   const user = await User.findOne({ email });
-//   if (!user) throw new Error("User not found");
-
-//   if (user.isPaid === false) throw new Error("Please buy a subscription");
-
-//   const shop = await Shop.findById(user.shop);
-//   if (!shop) throw new Error("Shop not found");
-
-//   if (!user.isShopCreated) {
-//     throw new Error("Shop is not created yet");
-//   }
-
-//   if (!shop.status || shop.status !== "approved") {
-//     throw new Error("Shop is not approved yet");
-//   }
-
-//   const product = await Product.findById(productId);
-//   if (!product) throw new Error("Product not found");
-
-//   if (product.quantity <= 0) {
-//     throw new Error("Product is out of stock");
-//   }
-
-//   if (shop.products.find((p) => p.productId.equals(product._id))) {
-//     throw new Error("Product already added to the shop");
-//   }
-
-//   const updatedShop = await Shop.findByIdAndUpdate(
-//     shop._id,
-//     {
-//       $push: {
-//         products: { productId, productQuantity: product.quantity },
-//       },
-//     },
-//     { new: true }
-//   ).populate([
-//     {
-//       path: "userId",
-//       select: "name email shop",
-//     },
-//     {
-//       path: "products.productId",
-//       populate: {
-//         path: "category",
-//         select: "title",
-//       },
-//     },
-//   ]);
-
-//   await AssignedProduct.updateOne(
-//     { productId: productId, userId: user._id },
-//     { $set: { productId: productId, userId: user._id } },
-//     { upsert: true }
-//   );
-
-//   return updatedShop;
-// };
-
 const shopService = {
   crateShopInDb,
   getShopDetailsByUserId,
   toggleShopStatus,
   getShopDetails,
   getAllShops,
-  // addProductToShop,
 };
 
 module.exports = shopService;

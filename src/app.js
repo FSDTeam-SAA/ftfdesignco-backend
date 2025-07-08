@@ -37,3 +37,6 @@ module.exports = app;
 
 //TODO 4: Api testing is not completed. if same product add then updated everything[my opinion].
 //TODO 5: employee profile is not updated. Api not completed.
+
+//? note............
+// may be now i remove the request product field.

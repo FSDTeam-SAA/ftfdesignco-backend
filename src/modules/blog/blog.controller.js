@@ -1,16 +1,8 @@
-const BlogModel= require("./blog.model.js");
+const BlogModel = require("./blog.model.js");
 const { sendImageToCloudinary } = require("../../utils/cloudnary");
 
-//------------------------- Blog -------------------------
 exports.createBlog = async (req, res) => {
   try {
-    const { email: userEmail } = req.user;
-    if (!userEmail) {
-      return res.status(400).json({
-        status: false,
-        message: "User not found",
-      });
-    }
     const { blogTitle, blogDescription } = req.body;
 
     if (!blogTitle || !blogDescription) {
@@ -26,12 +18,11 @@ exports.createBlog = async (req, res) => {
       const path = file?.path;
       const { secure_url } = await sendImageToCloudinary(imageName, path);
 
-      const blog = new BlogModel({
+      const blog = await BlogModel.create({
         blogTitle,
         blogDescription,
-        imageLink: secure_url,
+        image: secure_url,
       });
-      await blog.save();
 
       return res.status(201).json({
         status: true,
@@ -103,11 +94,6 @@ exports.getAllBlog = async (req, res) => {
   }
 };
 
-
-//_______________________________________
-
-//getting single ad
-
 exports.getSingleBlog = async (req, res) => {
   try {
     const id = req.params.id;
@@ -118,7 +104,7 @@ exports.getSingleBlog = async (req, res) => {
         message: "blog not found",
       });
     }
-   return res.status(200).json({
+    return res.status(200).json({
       status: true,
       message: "blog fetched successfully",
       data: blog,
@@ -132,19 +118,8 @@ exports.getSingleBlog = async (req, res) => {
   }
 };
 
-//_______________________________________
-
-//updating ad
-
 exports.updateBlog = async (req, res) => {
   try {
-    const { email: userEmail } = req.user;
-    if (!userEmail) {
-      return res.status(400).json({
-        status: false,
-        message: "User not found",
-      });
-    }
     const id = req.params.id;
     const { blogTitle, blogDescription } = req.body;
 
@@ -161,19 +136,18 @@ exports.updateBlog = async (req, res) => {
       const imageName = `blog/${Date.now()}_${file.originalname}`;
       const path = file?.path;
       const { secure_url } = await sendImageToCloudinary(imageName, path);
-      existingBlog.imageLink = secure_url;
+      existingBlog.image = secure_url;
     }
 
-    // Update the ad item
-    existingBlog.blogTitle = blogTitle;
-    existingBlog.blogDescription = blogDescription;
-    // existingBlog.author = author;
+    const result = await BlogModel.findByIdAndUpdate(id, {
+      blogTitle,
+      blogDescription,
+    });
 
-    await existingBlog.save();
     return res.status(200).json({
       status: true,
       message: "blog updated successfully",
-      data: existingBlog,
+      data: result,
     });
   } catch (error) {
     return res.status(500).json({
@@ -184,28 +158,17 @@ exports.updateBlog = async (req, res) => {
   }
 };
 
-//_______________________________________
-
-//deleting ad
-
 exports.deleteBlog = async (req, res) => {
   try {
-    const { email: userEmail } = req.user;
-    if (!userEmail) {
-      return res.status(400).json({
-        status: false,
-        message: "User not found",
-      });
-    }
     const id = req.params.id;
     const blog = await BlogModel.findByIdAndDelete(id);
     if (!blog) {
       return res.status(404).json({
         status: false,
         message: "blog not found",
-        data: "",
       });
     }
+
     res.status(200).json({
       status: true,
       message: "blog deleted successfully",
