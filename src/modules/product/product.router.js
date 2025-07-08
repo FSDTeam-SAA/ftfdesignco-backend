@@ -73,11 +73,7 @@ router.post(
   addProductToShop
 );
 
-// router.patch(
-//   "/add-coin/:productId",
-//   auth(USER_ROLE.company_admin),
-//   setCoinForProducts
-// );
+
 
 const productRouter = router;
 module.exports = productRouter;
