@@ -53,7 +53,6 @@ exports.addProduct = async (req, res) => {
       data: newProduct,
     });
   } catch (error) {
-    console.error("Add product error:", error);
     return res.status(500).json({
       success: false,
       code: 500,
@@ -191,7 +190,6 @@ exports.getProductById = async (req, res) => {
       data: product,
     });
   } catch (error) {
-    console.error("Get product by ID error:", error);
     return res.status(500).json({
       success: false,
       code: 500,
@@ -245,7 +243,6 @@ exports.updateProductById = async (req, res) => {
       data: updatedProduct,
     });
   } catch (error) {
-    console.error("Update product error:", error);
     return res.status(500).json({
       success: false,
       code: 500,
@@ -271,7 +268,6 @@ exports.deleteProductById = async (req, res) => {
       message: "Product deleted successfully",
     });
   } catch (error) {
-    console.error("Delete product error:", error);
     res.status(500).json({
       success: false,
       code: 500,

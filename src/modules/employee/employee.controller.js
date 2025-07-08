@@ -12,7 +12,6 @@ const createEmployee = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    console.error("Error creating employee:", error);
     res.status(500).json({ status: false, code: 500, message: error.message });
   }
 };
@@ -29,7 +28,6 @@ const getMyEmployees = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    console.error("Error fetching employees:", error);
     res.status(500).json({ status: false, code: 500, message: error.message });
   }
 };
@@ -51,7 +49,6 @@ const employeeCoinGive = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    console.error("Error giving coin:", error);
     res.status(500).json({ status: false, code: 500, message: error.message });
   }
 };
@@ -68,7 +65,6 @@ const getEmployeeProfile = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    console.error("Error giving coin:", error);
     res.status(500).json({ status: false, code: 500, message: error.message });
   }
 };
@@ -90,7 +86,6 @@ const updateEmployeeProfile = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    console.error("Error giving coin:", error);
     res.status(500).json({ status: false, code: 500, message: error.message });
   }
 };

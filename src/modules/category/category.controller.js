@@ -41,14 +41,7 @@ exports.createCategory = async (req, res) => {
     const newCategory = await Category.create({
       title,
       thumbnail: secure_url,
-      // userId: user._id,
     });
-
-    // Then populate user info
-    // const category = await Category.findById(newCategory._id).populate({
-    //   path: "userId",
-    //   select: "name email",
-    // });
 
     return res.status(201).json({
       success: true,
@@ -108,7 +101,6 @@ exports.getAllCategory = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get all categories error:", error);
     return res.status(500).json({
       success: false,
       code: 500,
@@ -173,7 +165,6 @@ exports.updateCategory = async (req, res) => {
       data: existingCategory,
     });
   } catch (error) {
-    console.error("Update Category Error:", error);
     return res.status(500).json({
       success: false,
       code: 500,
