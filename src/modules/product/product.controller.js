@@ -63,24 +63,23 @@ exports.addProduct = async (req, res) => {
   }
 };
 
-//TODO:1 there are to much isue i face, i only check can i get all products & limit and other fields i face some isue.Please solved it.
 exports.getAllProducts = async (req, res) => {
   try {
-    // Pagination
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Filters
-    const search = req.query.search || "";
+    const search = req.query.search?.trim() || "";
     const selectedPrices = req.query.prices ? req.query.prices.split(",") : [];
-    const sizeFilter = req.query.size || "";
-    const categoryFilter = req.query.category || "";
+    const sizeFilter = req.query.size ? req.query.size.split(",") : [];
+    const categoryTitleFilter = req.query.category
+      ? req.query.category.split(",")
+      : [];
     const sortBy = req.query.sort || "";
 
     const filter = {};
 
-    // Search filter
+    // 🔍 Search filter
     if (search) {
       filter.$or = [
         { productName: { $regex: search, $options: "i" } },
@@ -88,17 +87,25 @@ exports.getAllProducts = async (req, res) => {
       ];
     }
 
-    // Size filter
-    if (sizeFilter) {
-      filter.size = sizeFilter;
+    // 📏 Size filter
+    if (sizeFilter.length > 0) {
+      filter.size = { $in: sizeFilter };
     }
 
-    // Category filter
-    if (categoryFilter) {
-      filter.category = categoryFilter; // Assumes category is stored as ObjectId
+    // 🔷 Category filter (by title)
+    let categoryIds = [];
+    if (categoryTitleFilter.length > 0) {
+      const categories = await Category.find({
+        title: { $in: categoryTitleFilter },
+      }).select("_id");
+      categoryIds = categories.map((c) => c._id.toString());
+
+      if (categoryIds.length > 0) {
+        filter.category = { $in: categoryIds };
+      }
     }
 
-    // Price Range filter (multiple ranges supported)
+    // 💵 Price Range filter
     const isValidRange = (rangeStr) => /^\d+-\d+$/.test(rangeStr);
     const priceConditions = selectedPrices
       .filter(isValidRange)
@@ -108,7 +115,6 @@ exports.getAllProducts = async (req, res) => {
       });
 
     if (priceConditions.length > 0) {
-      // If `$or` already exists (from search), merge with `$and`
       if (filter.$or) {
         filter.$and = [{ $or: filter.$or }, { $or: priceConditions }];
         delete filter.$or;
@@ -117,7 +123,7 @@ exports.getAllProducts = async (req, res) => {
       }
     }
 
-    // Sorting
+    // 📝 Sorting
     let sortQuery = {};
     switch (sortBy) {
       case "asc":
@@ -130,10 +136,10 @@ exports.getAllProducts = async (req, res) => {
         sortQuery = { createdAt: -1 };
         break;
       default:
-        sortQuery = {}; // No sorting
+        sortQuery = {};
     }
 
-    // Query DB
+    // 📄 Query DB
     const [products, totalProducts] = await Promise.all([
       Product.find(filter)
         .skip(skip)
@@ -143,14 +149,19 @@ exports.getAllProducts = async (req, res) => {
       Product.countDocuments(filter),
     ]);
 
+    const totalPages = Math.ceil(totalProducts / limit);
+
     return res.status(200).json({
       success: true,
       code: 200,
       message: "Products retrieved successfully",
       data: products,
-      totalProducts,
-      currentPage: page,
-      totalPages: Math.ceil(totalProducts / limit),
+      pagination: {
+        totalProducts,
+        currentPage: page,
+        totalPages,
+        limit,
+      },
     });
   } catch (error) {
     console.error("Get all products error:", error);
@@ -328,37 +339,3 @@ exports.addProductToShop = async (req, res) => {
     });
   }
 };
-
-// exports.setCoinForProducts = async (req, res) => {
-//   try {
-//     const { userId } = req.user;
-//     const { productId } = req.params;
-//     const { coin } = req.body;
-
-//     const product = await AssignedProduct.findById(productId);
-//     if (!product) throw new Error("Product not found");
-
-//     if (!product.userId.equals(userId)) {
-//       throw new Error("You are not authorized to set coin for this product");
-//     }
-
-//     const result = await AssignedProduct.findByIdAndUpdate(
-//       productId,
-//       { coin },
-//       { new: true }
-//     );
-
-//     return res.status(200).json({
-//       success: true,
-//       code: 200,
-//       message: "Coin set successfully",
-//       data: result,
-//     });
-//   } catch (error) {
-//     return res.status(400).json({
-//       success: false,
-//       code: 400,
-//       message: error.message,
-//     });
-//   }
-// };
