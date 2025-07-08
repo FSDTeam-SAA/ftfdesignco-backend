@@ -21,20 +21,37 @@ const orderProduct = async (req, res) => {
 const getMyOrder = async (req, res) => {
   try {
     const { employeeId } = req.user;
-    const result = await orderService.getMyOrders(employeeId);
+
+    // extract & validate page & limit
+    let page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+
+    page = page < 1 ? 1 : page;
+    limit = limit < 1 ? 10 : limit;
+    limit = Math.min(limit, 100); // cap at 100 per page
+
+    const result = await orderService.getMyOrders(employeeId, page, limit);
 
     return res.status(200).json({
       success: true,
       code: 200,
       message: "Orders fetched successfully",
-      data: result,
+      data: result.data,
+      pagination: result.pagination,
     });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ success: false, code: 400, message: error.message });
+    console.error("getMyOrder error:", error);
+    return res.status(400).json({
+      success: false,
+      code: 400,
+      message: error.message,
+    });
   }
 };
+
+module.exports = { getMyOrder };
+
+
 
 const getAllOrdersFromShop = async (req, res) => {
   try {

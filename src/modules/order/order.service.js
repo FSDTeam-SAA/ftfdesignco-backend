@@ -65,25 +65,42 @@ const orderProduct = async (payload, employeeId) => {
   return result;
 };
 
-const getMyOrders = async (employeeId) => {
+const getMyOrders = async (employeeId, page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+
   const employee = await Employee.findOne({ employeeId });
   if (!employee) throw new Error("Employee not found.");
 
-  const result = await Order.find({ employeeId: employee._id })
-    .populate({
-      path: "employeeId",
-      select: "name employeeId",
-    })
-    .populate({
-      path: "productId",
-      select: "title price",
-    })
-    .populate({
-      path: "shopId",
-      select: "companyName companyId",
-    });
+  const [orders, totalOrders] = await Promise.all([
+    Order.find({ employeeId: employee._id })
+      .skip(skip)
+      .limit(limit)
+      .populate({
+        path: "employeeId",
+        select: "name employeeId",
+      })
+      .populate({
+        path: "productId",
+        select: "title price",
+      })
+      .populate({
+        path: "shopId",
+        select: "companyName companyId",
+      }),
+    Order.countDocuments({ employeeId: employee._id }),
+  ]);
 
-  return result;
+  const totalPages = Math.ceil(totalOrders / limit);
+
+  return {
+    data: orders,
+    pagination: {
+      totalOrders,
+      currentPage: page,
+      totalPages,
+      limit,
+    },
+  };
 };
 
 const getAllOrdersFromShop = async (email) => {
