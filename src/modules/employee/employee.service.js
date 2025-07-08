@@ -12,6 +12,10 @@ const createEmployeeInDb = async (email, payload) => {
     throw new Error("You need to create a shop first.");
   }
 
+  if (user.isPaid === false) {
+    throw new Error("Please buy a subscription.");
+  }
+
   const shop = await Shop.findById(user.shop);
   if (!shop) throw new Error("Shop not found.");
 
@@ -19,12 +23,12 @@ const createEmployeeInDb = async (email, payload) => {
     throw new Error("Shop is not approved yet.");
   }
 
-  const payment = await Payment.findOne({ userId: user._id });
-  if (!payment) throw new Error("Please buy a subscription");
+  // const payment = await Payment.findOne({ userId: user._id });
+  // if (!payment) throw new Error("Please buy a subscription");
 
-  if (payment.status !== "success") {
-    throw new Error("Payment is not success.");
-  }
+  // if (payment.status !== "success") {
+  //   throw new Error("Payment is not success.");
+  // }
 
   const now = new Date();
   if (shop.subscriptionEndDate && shop.subscriptionEndDate < now) {
@@ -35,6 +39,7 @@ const createEmployeeInDb = async (email, payload) => {
   if (totalEmployee.employeeCount >= shop.subscriptionEmployees) {
     throw new Error("You have to rach your subscription limit.");
   }
+  console.log(totalEmployee);
 
   const isExistEmployee = await Employee.findOne({ email: payload.email });
   if (isExistEmployee) {
