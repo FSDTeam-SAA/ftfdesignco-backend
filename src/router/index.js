@@ -13,6 +13,7 @@ const subscriptionPlanRouter = require("../modules/subscriptionPlan/subscription
 const { path } = require("../app");
 const orderRouter = require("../modules/order/order.router");
 const newsLetterRouter = require("../modules/newsLetter/newsLetter.routes");
+const cartRouter = require("../modules/cart/cart.router");
 
 const router = Router();
 
@@ -68,6 +69,10 @@ const moduleRouter = [
   {
     path: "/newsletter",
     router: newsLetterRouter,
+  },
+  {
+    path: "/cart",
+    router: cartRouter,
   },
 ];
 

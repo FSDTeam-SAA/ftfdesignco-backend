@@ -20,6 +20,9 @@ const ProductSchema = new Schema(
       required: [true, "Quantity is required"],
       min: 0,
     },
+    size: {
+      type: String,
+    },
     productImage: {
       type: String,
     },

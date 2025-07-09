@@ -54,6 +54,19 @@ const employeeModel = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
   },
+  cartData: {
+    type: Map,
+    of: new Schema({
+      quantity: Number,
+      size: String,
+      coin: Number,
+      productId: {
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    }),
+    default: {},
+  },
 });
 
 employeeModel.pre("save", async function (next) {

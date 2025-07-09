@@ -54,27 +54,6 @@ const shopModel = new Schema(
       type: Number,
       default: 0,
     },
-    // products: [
-    //   {
-    //     productId: {
-    //       type: Schema.Types.ObjectId,
-    //       ref: "Product",
-    //     },
-    //     productQuantity: {
-    //       type: Number,
-    //       default: 0,
-    //     },
-    //     coin: {
-    //       type: Number,
-    //       default: 0,
-    //     },
-    //     status: {
-    //       type: String,
-    //       enum: ["approved", "pending", "rejected"],
-    //       default: "pending",
-    //     },
-    //   },
-    // ],   
   },
   {
     timestamps: true,
