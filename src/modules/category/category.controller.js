@@ -193,18 +193,18 @@ exports.getCategoryProducts = async (req, res) => {
   }
 };
 
-//TODO:3. Deleted category there are some logic problem.if category is under any product then it can't delete.
+
 exports.deleteCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
     const category = await Category.findById(categoryId);
-    if (category) {
+    if (!category) {
       throw new Error("Category not found");
     }
 
     const product = await Product.findOne({ category: categoryId });
     if (product) {
-      throw new Error("Category is associated with a product");
+      throw new Error("Category is under a product, cannot delete it");
     }
 
     await Category.findByIdAndDelete(categoryId);
