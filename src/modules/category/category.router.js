@@ -7,6 +7,7 @@ const {
   getCategoryById,
   updateCategory,
   getCategoryProducts,
+  deleteCategory,
 } = require("./category.controller");
 const auth = require("../../middleware/auth");
 const USER_ROLE = require("../user/user.constant");
@@ -69,7 +70,11 @@ router.put(
   updateCategory
 );
 
-router.delete("/:categoryId", auth(USER_ROLE.admin), getCategoryById);
+router.delete(
+  "/remove/:categoryId",
+  // auth(USER_ROLE.admin, USER_ROLE.company_admin),
+  deleteCategory
+);
 
 const categoryRouter = router;
 module.exports = categoryRouter;

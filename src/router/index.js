@@ -5,7 +5,6 @@ const categoryRouter = require("../modules/category/category.router");
 const authRouter = require("../modules/auth/auth.router");
 const shopRouter = require("../modules/shop/shop.router");
 const productRouter = require("../modules/product/product.router");
-const requestProduct = require("../modules/requestProducts/requestProduct.router");
 const assignedProduct = require("../modules/assignedProduct/assignedProduct.router");
 const sendMessageRouter = require("../modules/contract/contract.router");
 const paymentRouter = require("../modules/payment/payment.routes");
@@ -15,8 +14,7 @@ const { path } = require("../app");
 const orderRouter = require("../modules/order/order.router");
 const newsLetterRouter = require("../modules/newsLetter/newsLetter.routes");
 
-
-const router = Router()
+const router = Router();
 
 const moduleRouter = [
   {
@@ -44,10 +42,6 @@ const moduleRouter = [
     router: productRouter,
   },
   {
-    path: "/request-product",
-    router: requestProduct,
-  },
-  {
     path: "/assigned-product",
     router: assignedProduct,
   },
@@ -72,13 +66,13 @@ const moduleRouter = [
     router: orderRouter,
   },
   {
-    path: '/newsletter',
+    path: "/newsletter",
     router: newsLetterRouter,
   },
-]
+];
 
 moduleRouter.forEach((route) => {
-  router.use(route.path, route.router)
-})
+  router.use(route.path, route.router);
+});
 
-module.exports = router
+module.exports = router;
