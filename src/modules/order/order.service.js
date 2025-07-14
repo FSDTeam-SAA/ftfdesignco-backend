@@ -45,6 +45,7 @@ const orderProduct = async (payload, employeeId) => {
     shopId: shop._id,
   });
 
+  //? here the problem and some changes is coming........
   await Shop.findOneAndUpdate(
     { _id: shopId, "products.productId": productId },
     {
@@ -58,7 +59,7 @@ const orderProduct = async (payload, employeeId) => {
 
   await Employee.findOneAndUpdate(
     { employeeId },
-    { $inc: { coin: -shopProduct.coin } },
+    { $inc: { coin: -shopProduct.coin }},
     { new: true }
   );
 

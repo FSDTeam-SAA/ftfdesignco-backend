@@ -135,12 +135,21 @@ const getShopDetails = async (shopId) => {
   return result;
 };
 
-const getAllShops = async () => {
-  const result = await Shop.find().populate({
-    path: "userId",
-    select: "name email shop isShopCreated isVerified",
-  });
-  return result;
+const getAllShops = async (page, limit) => {
+  const skip = (page - 1) * limit;
+
+  const [shops, total] = await Promise.all([
+    Shop.find()
+      .populate({
+        path: "userId",
+        select: "name email shop isShopCreated isVerified",
+      })
+      .skip(skip)
+      .limit(limit),
+    Shop.countDocuments(),
+  ]);
+
+  return { shops, total };
 };
 
 const shopService = {
