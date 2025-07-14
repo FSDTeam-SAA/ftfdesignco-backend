@@ -25,29 +25,84 @@ const getAssignedProductForUser = async () => {
   return result;
 };
 
-const getMyShopAssigndedProducts = async (email) => {
+const getMyShopAssigndedProducts = async (
+  email,
+  { categoryName, minCoin, page, limit }
+) => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("User not found");
 
   const shop = await Shop.findById(user.shop);
   if (!shop) throw new Error("Shop not found");
 
-  const result = await AssignedProduct.find({ shopId: shop._id })
-    .populate({
-      path: "productId",
-      select: "title price quantity category coin",
-      populate: {
-        path: "category",
-        select: "title",
-      },
-    })
-    .populate({
-      path: "shopId",
-      select: "companyName companyId",
-    })
-    .exec();
+  const skip = (page - 1) * limit;
 
-  return result;
+  // Base match
+  const matchStage = { shopId: shop._id };
+
+  if (minCoin) {
+    matchStage.coin = { $gte: Number(minCoin) };
+  }
+
+  const pipeline = [
+    { $match: matchStage },
+    {
+      $lookup: {
+        from: "products",
+        localField: "productId",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    { $unwind: "$product" },
+    {
+      $lookup: {
+        from: "categories",
+        localField: "product.category",
+        foreignField: "_id",
+        as: "product.category",
+      },
+    },
+    { $unwind: "$product.category" },
+  ];
+
+  if (categoryName) {
+    pipeline.push({
+      $match: {
+        "product.category.title": { $regex: categoryName, $options: "i" },
+      },
+    });
+  }
+
+  pipeline.push(
+    {
+      $lookup: {
+        from: "shops",
+        localField: "shopId",
+        foreignField: "_id",
+        as: "shop",
+      },
+    },
+    { $unwind: "$shop" },
+    {
+      $facet: {
+        products: [{ $skip: skip }, { $limit: limit }],
+        totalCount: [{ $count: "count" }],
+      },
+    }
+  );
+
+  const result = await AssignedProduct.aggregate(pipeline);
+
+  const products = result[0]?.products || [];
+  const total = result[0]?.totalCount[0]?.count || 0;
+
+  return {
+    products,
+    total,
+    page,
+    limit,
+  };
 };
 
 const toggleAssigndedProductStatus = async (assignedProductId, payload) => {

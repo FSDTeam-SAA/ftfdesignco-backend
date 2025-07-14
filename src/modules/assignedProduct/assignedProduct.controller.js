@@ -18,18 +18,34 @@ const getAssignedProducts = async (req, res) => {
   }
 };
 
+
 const getMyShopAssigndedProducts = async (req, res) => {
   try {
     const { email } = req.user;
+
+    const {
+      categoryName, // filter by category name
+      minCoin,
+      page = 1,
+      limit = 10,
+    } = req.query;
+
     const result = await assignedProductService.getMyShopAssigndedProducts(
-      email
+      email,
+      { categoryName, minCoin, page: parseInt(page), limit: parseInt(limit) }
     );
 
     return res.status(200).json({
       success: true,
       code: 200,
       message: "Products fetched successfully",
-      data: result,
+      data: result.products,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: Math.ceil(result.total / result.limit),
+      },
     });
   } catch (error) {
     return res
