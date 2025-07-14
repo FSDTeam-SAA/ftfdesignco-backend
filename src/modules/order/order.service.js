@@ -6,21 +6,23 @@ const Order = require("./order.model");
 
 //There are some logic problem in this function.... i cann't add logic employee is under vaild shop or not and product is under valid shop or not.
 //? Logic add is: when order any product then it's quantity minus by admin added product.
+//! check there first.......................
+const orderProduct = async (payload, employeeId, employeeShopId) => {
+  console.log(employeeId);
+  const { productId } = payload;
 
-const orderProduct = async (payload, employeeId) => {
-  const { productId, shopId } = payload;
-
-  const employee = await Employee.findOne({ employeeId });
+  const employee = await Employee.findOne({ employeeId, shop: employeeShopId });
   if (!employee) throw new Error("Employee not found.");
+  console.log(employee.shop, employeeShopId);
 
-  if (employee.shop.toString() !== shopId) {
+  if (employee.shop.toString() !== employeeShopId) {
     throw new Error("You are not employee under this company.");
   }
 
   const product = await Product.findById(productId);
   if (!product) throw new Error("Product not found.");
 
-  const shop = await Shop.findById(shopId);
+  const shop = await Shop.findById(employeeShopId);
   if (!shop) throw new Error("Shop not found.");
 
   const shopProduct = shop.products.find((p) =>
@@ -47,7 +49,7 @@ const orderProduct = async (payload, employeeId) => {
 
   //? here the problem and some changes is coming........
   await Shop.findOneAndUpdate(
-    { _id: shopId, "products.productId": productId },
+    { _id: shop._id, "products.productId": productId },
     {
       $inc: {
         "products.$.productQuantity": -1,
@@ -59,7 +61,7 @@ const orderProduct = async (payload, employeeId) => {
 
   await Employee.findOneAndUpdate(
     { employeeId },
-    { $inc: { coin: -shopProduct.coin }},
+    { $inc: { coin: -shopProduct.coin } },
     { new: true }
   );
 

@@ -268,6 +268,7 @@ const employeeLogin = async (payload) => {
     employeeId: employee.employeeId,
     email: employee.email,
     role: employee.role,
+    shop: employee.shop._id,
   };
 
   const accessToken = createToken(

@@ -69,6 +69,33 @@ const getEmployeeProfile = async (req, res) => {
   }
 };
 
+const getEmployeeShopProducts = async (req, res) => {
+  try {
+    const { employeeId, shop } = req.user;
+    const { page = 1, limit = 10 } = req.query; // Default pagination values
+
+    const result = await employeeService.getEmployeeShopProducts(
+      employeeId,
+      shop,
+      parseInt(page),
+      parseInt(limit)
+    );
+
+    return res.status(200).json({
+      status: true,
+      code: 200,
+      message: "Employee shop products fetched successfully",
+      data: {
+        products: result.products,
+        currentPage: result.currentPage,
+        totalPages: result.totalPages,
+        totalProducts: result.totalProducts,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ status: false, code: 500, message: error.message });
+  }
+};
 const updateEmployeeProfile = async (req, res) => {
   try {
     console.log(req.user);
@@ -95,6 +122,7 @@ const employeeController = {
   getMyEmployees,
   employeeCoinGive,
   getEmployeeProfile,
+  getEmployeeShopProducts,
   updateEmployeeProfile,
 };
 module.exports = employeeController;
