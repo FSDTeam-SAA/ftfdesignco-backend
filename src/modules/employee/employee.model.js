@@ -14,7 +14,7 @@ const employeeModel = new Schema({
   employeeId: {
     type: String,
     required: [true, "Employee ID is required"],
-    unique: true,
+    // unique: true,
   },
   password: {
     type: String,

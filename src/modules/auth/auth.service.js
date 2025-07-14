@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const verificationCodeTemplate = require("../../utils/verificationCodeTemplate");
 const sendEmail = require("../../utils/sendEmail");
 const Employee = require("../employee/employee.model");
+const Shop = require("../shop/shop.model");
 
 const loginUser = async (payload) => {
   const user = await User.findOne({ email: payload.email }).select("+password");
@@ -230,8 +231,16 @@ const changePassword = async (payload, email) => {
 };
 
 const employeeLogin = async (payload) => {
+  const shop = await Shop.findOne({
+    companyId: payload.companyId,
+  });
+  if (!shop) {
+    throw new Error("Shop not found");
+  }
+
   const employee = await Employee.findOne({
     employeeId: payload.employeeId,
+    shop: shop._id,
   })
     .select("+password")
     .populate({
