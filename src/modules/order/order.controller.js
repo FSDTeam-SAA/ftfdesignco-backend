@@ -2,8 +2,8 @@ const orderService = require("./order.service");
 
 const orderProduct = async (req, res) => {
   try {
-    const { employeeId } = req.user;
-    const result = await orderService.orderProduct(req.body, employeeId);
+    const { employeeId, shop } = req.user;
+    const result = await orderService.orderProduct(req.body, employeeId, shop);
 
     return res.status(200).json({
       success: true,
@@ -50,8 +50,6 @@ const getMyOrder = async (req, res) => {
 };
 
 module.exports = { getMyOrder };
-
-
 
 const getAllOrdersFromShop = async (req, res) => {
   try {

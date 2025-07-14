@@ -30,6 +30,12 @@ router.put(
   employeeController.employeeCoinGive
 );
 
+router.get(
+  "/shop-products",
+  auth(USER_ROLE.employee),
+  employeeController.getEmployeeShopProducts
+);
+
 router.patch(
   "/update",
   upload.single("image"),

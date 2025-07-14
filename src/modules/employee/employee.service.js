@@ -1,4 +1,5 @@
 const { sendImageToCloudinary } = require("../../utils/cloudnary");
+const AssignedProduct = require("../assignedProduct/assignedProduct.model");
 const { Payment } = require("../payment/payment.model");
 const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
@@ -133,6 +134,46 @@ const getEmployeeProfile = async (employeeId) => {
   return employee;
 };
 
+const getEmployeeShopProducts = async (
+  employeeId,
+  shop,
+  page = 1,
+  limit = 10
+) => {
+  // Validate inputs
+  page = Math.max(1, parseInt(page));
+  limit = Math.max(1, parseInt(limit));
+
+  // Verify shop exists
+  const shopData = await Shop.findById(shop);
+  if (!shopData) throw new Error("Shop not found.");
+
+  // Verify employee exists and belongs to shop owner
+  const employee = await Employee.findOne({ employeeId, shop });
+  if (!employee) throw new Error("Employee not found.");
+
+  if (!employee.userId.equals(shopData.userId)) {
+    throw new Error("You are not the owner of this employee.");
+  }
+
+  // Get total count of products for pagination info
+  const totalProducts = await AssignedProduct.countDocuments({ shopId: shop });
+
+  // Get paginated products with population
+  const products = await AssignedProduct.find({ shopId: shop })
+    .populate("productId")
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .exec();
+
+  return {
+    products,
+    currentPage: page,
+    totalPages: Math.ceil(totalProducts / limit),
+    totalProducts,
+  };
+};
+
 const updateEmployeeOwnProfile = async (employeeId, payload, file) => {
   const employee = await Employee.findOne({ employeeId });
   if (!employee) throw new Error("Employee not found.");
@@ -164,6 +205,7 @@ const employeeService = {
   getMyEmployees,
   employeeCoinGive,
   getEmployeeProfile,
+  getEmployeeShopProducts,
   updateEmployeeOwnProfile,
 };
 module.exports = employeeService;
