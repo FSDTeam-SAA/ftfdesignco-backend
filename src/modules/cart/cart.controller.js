@@ -18,12 +18,22 @@ const addToCart = async (req, res) => {
 const getMyOwnCart = async (req, res) => {
   try {
     const { employeeId } = req.user;
-    const result = await cartService.getMyOwnCart(employeeId);
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const result = await cartService.getMyOwnCart(employeeId, page, limit);
 
     return res.status(200).json({
       success: true,
-      message: "Cart get successfully",
-      data: result,
+      message: "Cart fetched successfully",
+      data: result.cart,
+      pagination: {
+        total: result.total,
+        page,
+        limit,
+        totalPages: Math.ceil(result.total / limit),
+      },
     });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
@@ -39,7 +49,7 @@ const removeFromCart = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Product removed from cart successfully",
-    //   data: result,
+      //   data: result,
     });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
