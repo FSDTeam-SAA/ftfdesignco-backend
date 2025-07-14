@@ -77,13 +77,22 @@ const shopDetails = async (req, res) => {
 
 const getAllShops = async (req, res) => {
   try {
-    const result = await shopService.getAllShops();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const result = await shopService.getAllShops(page, limit);
 
     return res.status(200).json({
       success: true,
       code: 200,
       message: "Shops fetched successfully",
-      data: result,
+      data: result.shops,
+      pagination: {
+        total: result.total,
+        page,
+        limit,
+        totalPages: Math.ceil(result.total / limit),
+      },
     });
   } catch (error) {
     return res.status(400).json({
@@ -94,6 +103,7 @@ const getAllShops = async (req, res) => {
     });
   }
 };
+
 
 
 const shopController = {
