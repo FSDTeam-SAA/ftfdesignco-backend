@@ -45,11 +45,25 @@ const addToCart = async (employeeId, payload) => {
   return result;
 };
 
-const getMyOwnCart = async (employeeId) => {
-  const employee = await Employee.findOne({ employeeId });
+const getMyOwnCart = async (employeeId, page, limit) => {
+  const employee = await Employee.findOne({ employeeId }).lean(); 
+
   if (!employee) throw new Error("Employee not found.");
 
-  return employee.cartData;
+  const cartData = employee.cartData || {};
+  const cartArray = Object.values(cartData);
+
+  const total = cartArray.length;
+
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+
+  const paginatedCart = cartArray.slice(startIndex, endIndex);
+
+  return {
+    cart: paginatedCart,
+    total,
+  };
 };
 
 const removeFromCart = async (employeeId, cartItemId) => {
