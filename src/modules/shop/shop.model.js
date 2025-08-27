@@ -23,7 +23,7 @@ const shopModel = new Schema(
     companyBanner: {
       type: String,
     },
-    comapnyAddress: {
+    companyAddress: {
       type: String,
       required: true,
     },

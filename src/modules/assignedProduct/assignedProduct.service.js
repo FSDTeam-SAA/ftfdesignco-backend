@@ -18,7 +18,7 @@ const getAssignedProductForUser = async () => {
     })
     .populate({
       path: "shopId",
-      select: "companyName companyId comapnyAddress",
+      select: "companyName companyId companyAddress",
     })
     .exec();
 
