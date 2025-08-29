@@ -98,7 +98,7 @@ const toggleShopStatus = async (payload, shopId) => {
   ).populate({
     path: "userId",
     select:
-      "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
+      "name email phone employeeCount isPaid",
   });
 
   await User.findOneAndUpdate(
