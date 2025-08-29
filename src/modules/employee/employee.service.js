@@ -32,7 +32,7 @@ const createEmployeeInDb = async (email, payload) => {
 
   const totalEmployee = await User.findOne({ email }).select("employeeCount");
   if (totalEmployee.employeeCount >= shop.subscriptionEmployees) {
-    throw new Error("You have to rach your subscription limit.");
+    throw new Error("You have to reach your subscription limit.");
   }
 
   const isExistEmployee = await Employee.findOne({ email: payload.email });
