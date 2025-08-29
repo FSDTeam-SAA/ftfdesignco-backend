@@ -176,7 +176,6 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
-
 exports.getProductById = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -289,8 +288,6 @@ exports.addProductToShop = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) throw new Error("User not found");
 
-    if (user.isPaid === false) throw new Error("Please buy a subscription");
-
     const shop = await Shop.findById(user.shop);
     if (!shop) throw new Error("Shop not found");
 
@@ -300,9 +297,7 @@ exports.addProductToShop = async (req, res) => {
       throw new Error("You are not the owner of this shop");
     }
 
-    if (!user.isShopCreated) {
-      throw new Error("Shop is not created yet");
-    }
+    if (user.isPaid === false) throw new Error("Please buy a subscription");
 
     // if (!shop.status || shop.status !== "approved") {
     //   throw new Error("Shop is not approved yet");
