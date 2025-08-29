@@ -28,7 +28,7 @@ router.post(
     }
     next();
   },
-  auth(USER_ROLE.admin),
+  auth(USER_ROLE.company_admin),
   createCategory
 );
 

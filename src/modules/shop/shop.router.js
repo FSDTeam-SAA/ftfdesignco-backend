@@ -31,7 +31,7 @@ router.post(
 
 router.get(
   "/my-shop",
-  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  auth(USER_ROLE.company_admin, USER_ROLE.admin, USER_ROLE.employee),
   shopController.getShopDetails
 );
 

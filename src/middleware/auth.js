@@ -20,6 +20,8 @@ const auth = (...roles) => {
       }
       req.user = verifiedUser;
 
+      console.log('this is verified user', verifiedUser);
+
       if (roles.length && !roles.includes(verifiedUser.role)) {
         return res.status(403).json({ success: false, message: "Forbidden" });
       }

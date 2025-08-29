@@ -119,7 +119,7 @@ const getShopDetails = async (shopId) => {
   const result = await Shop.findById(shopId).populate({
     path: "userId",
     select:
-      "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires",
+      "-password -otp -otpExpires -resetPasswordOtp -resetPasswordOtpExpires -createdAt -updatedAt",
   });
   return result;
 };

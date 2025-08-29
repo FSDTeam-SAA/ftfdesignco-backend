@@ -76,13 +76,21 @@ exports.getAllProducts = async (req, res) => {
       : [];
     const sortBy = req.query.sort || "";
 
-    const filter = {};
+    let filter = {};
 
-    // 🔍 Search filter
+    // 🔍 Search filter (title, description, category title)
     if (search) {
+      // first find matching category IDs by search
+      const categoriesBySearch = await Category.find({
+        title: { $regex: search, $options: "i" },
+      }).select("_id");
+
+      const matchedCategoryIds = categoriesBySearch.map((c) => c._id);
+
       filter.$or = [
-        { productName: { $regex: search, $options: "i" } },
-        { productDescription: { $regex: search, $options: "i" } },
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { category: { $in: matchedCategoryIds } },
       ];
     }
 
@@ -91,14 +99,13 @@ exports.getAllProducts = async (req, res) => {
       filter.size = { $in: sizeFilter };
     }
 
-    // 🔷 Category filter (by title)
-    let categoryIds = [];
+    // 🔷 Category filter (by exact title match)
     if (categoryTitleFilter.length > 0) {
       const categories = await Category.find({
         title: { $in: categoryTitleFilter },
       }).select("_id");
-      categoryIds = categories.map((c) => c._id.toString());
 
+      const categoryIds = categories.map((c) => c._id.toString());
       if (categoryIds.length > 0) {
         filter.category = { $in: categoryIds };
       }
@@ -114,22 +121,18 @@ exports.getAllProducts = async (req, res) => {
       });
 
     if (priceConditions.length > 0) {
-      if (filter.$or) {
-        filter.$and = [{ $or: filter.$or }, { $or: priceConditions }];
-        delete filter.$or;
-      } else {
-        filter.$or = priceConditions;
-      }
+      filter.$and = filter.$and || [];
+      filter.$and.push({ $or: priceConditions });
     }
 
     // 📝 Sorting
     let sortQuery = {};
     switch (sortBy) {
       case "asc":
-        sortQuery = { productName: 1 };
+        sortQuery = { title: 1 };
         break;
       case "desc":
-        sortQuery = { productName: -1 };
+        sortQuery = { title: -1 };
         break;
       case "recent":
         sortQuery = { createdAt: -1 };
@@ -172,6 +175,7 @@ exports.getAllProducts = async (req, res) => {
     });
   }
 };
+
 
 exports.getProductById = async (req, res) => {
   try {
@@ -290,13 +294,19 @@ exports.addProductToShop = async (req, res) => {
     const shop = await Shop.findById(user.shop);
     if (!shop) throw new Error("Shop not found");
 
+    if (shop.status !== "approved") throw new Error("Shop is not approved yet");
+
+    if (shop.userId.toString() !== user._id.toString()) {
+      throw new Error("You are not the owner of this shop");
+    }
+
     if (!user.isShopCreated) {
       throw new Error("Shop is not created yet");
     }
 
-    if (!shop.status || shop.status !== "approved") {
-      throw new Error("Shop is not approved yet");
-    }
+    // if (!shop.status || shop.status !== "approved") {
+    //   throw new Error("Shop is not approved yet");
+    // }
 
     const product = await Product.findById(productId);
     if (!product) throw new Error("Product not found");
