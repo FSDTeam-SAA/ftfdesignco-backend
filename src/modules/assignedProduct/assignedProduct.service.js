@@ -7,10 +7,6 @@ const getAssignedProductForUser = async () => {
     .populate({
       path: "productId",
       select: "title price quantity category",
-      populate: {
-        path: "category",
-        select: "title",
-      },
     })
     .populate({
       path: "userId",
@@ -39,13 +35,14 @@ const getMyShopAssigndedProducts = async (
 
   // Base match
   const matchStage = { shopId: shop._id };
-
   if (minCoin) {
     matchStage.coin = { $gte: Number(minCoin) };
   }
 
   const pipeline = [
     { $match: matchStage },
+
+    // Join with product
     {
       $lookup: {
         from: "products",
@@ -55,6 +52,8 @@ const getMyShopAssigndedProducts = async (
       },
     },
     { $unwind: "$product" },
+
+    // Join with category
     {
       $lookup: {
         from: "categories",
@@ -64,17 +63,19 @@ const getMyShopAssigndedProducts = async (
       },
     },
     { $unwind: "$product.category" },
-  ];
 
-  if (categoryName) {
-    pipeline.push({
-      $match: {
-        "product.category.title": { $regex: categoryName, $options: "i" },
-      },
-    });
-  }
+    // Optional filter by category name
+    ...(categoryName
+      ? [
+        {
+          $match: {
+            "product.category.title": { $regex: categoryName, $options: "i" },
+          },
+        },
+      ]
+      : []),
 
-  pipeline.push(
+    // Join with shop
     {
       $lookup: {
         from: "shops",
@@ -84,13 +85,32 @@ const getMyShopAssigndedProducts = async (
       },
     },
     { $unwind: "$shop" },
+
+    // ✅ Keep only required fields
+    {
+      $project: {
+        coin: 1,
+        status: 1,
+        "product._id": 1,
+        "product.title": 1,
+        "product.price": 1,
+        "product.productImage": 1,
+        "product.category._id": 1,
+        "product.category.title": 1,
+        "shop._id": 1,
+        "shop.companyName": 1,
+        "shop.companyLogo": 1,
+      },
+    },
+
+    // Pagination + count
     {
       $facet: {
         products: [{ $skip: skip }, { $limit: limit }],
         totalCount: [{ $count: "count" }],
       },
-    }
-  );
+    },
+  ];
 
   const result = await AssignedProduct.aggregate(pipeline);
 
@@ -151,6 +171,10 @@ const setCoinForProducts = async (email, payload, assignedProductId) => {
   const assignedProduct = await AssignedProduct.findById(assignedProductId);
   if (!assignedProduct) throw new Error("Assigned product not found");
 
+  if (!assignedProduct.status === "approved") {
+    throw new Error("Product is not approved yet");
+  }
+
   if (
     !assignedProduct.shopId.equals(shop._id) ||
     !assignedProduct.userId.equals(user._id)
@@ -166,12 +190,79 @@ const setCoinForProducts = async (email, payload, assignedProductId) => {
   return result;
 };
 
+
+const getMyShopApprovedProducts = async (email, query) => {
+  const { search, category, minPrice, maxPrice, page = 1, limit = 10 } = query;
+
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found");
+
+  const shop = await Shop.findById(user.shop);
+  if (!shop) throw new Error("Shop not found");
+
+  // Pagination
+  const skip = (Number(page) - 1) * Number(limit);
+
+  // Query AssignedProduct with filters on productId via populate.match
+  const products = await AssignedProduct.find({
+    shopId: shop._id,
+    status: "approved",
+  })
+    .populate({
+      path: "productId",
+      match: {
+        ...(search && { title: { $regex: search, $options: "i" } }),
+        ...(category && { category }),
+        ...(minPrice || maxPrice
+          ? {
+            price: {
+              ...(minPrice && { $gte: Number(minPrice) }),
+              ...(maxPrice && { $lte: Number(maxPrice) }),
+            },
+          }
+          : {}),
+      },
+      populate: {
+        path: "category",
+        model: "Category",
+        select: "title thumbnail",
+      },
+    })
+    .populate({
+      path: "shopId",
+      select: "companyName companyLogo",
+    })
+    .skip(skip)
+    .limit(Number(limit));
+
+  // Filter out items where productId=null (because they didn’t match search/category/price)
+  const filteredProducts = products.filter((p) => p.productId);
+
+  // Count again with same filters applied
+  const total = filteredProducts.length;
+
+  return {
+    data: filteredProducts,
+    meta: {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+
+
+
+
 const assignedProductService = {
   getAssignedProductForUser,
   getMyShopAssigndedProducts,
   toggleAssigndedProductStatus,
   removeProductFromShop,
   setCoinForProducts,
+  getMyShopApprovedProducts
 };
 
 module.exports = assignedProductService;
