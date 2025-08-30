@@ -35,6 +35,7 @@ const getMyShopAssigndedProducts = async (req, res) => {
       { categoryName, minCoin, page: parseInt(page), limit: parseInt(limit) }
     );
 
+
     return res.status(200).json({
       success: true,
       code: 200,
@@ -120,11 +121,39 @@ const setCoinForProducts = async (req, res) => {
   }
 };
 
+
+const getMyShopApprovedProducts = async (req, res) => {
+  try {
+    const { email } = req.user;
+
+    // Pass query params to service
+    const result = await assignedProductService.getMyShopApprovedProducts(
+      email,
+      req.query
+    );
+
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Products fetched successfully",
+      data: result.data,
+      pagination: result.meta, // pagination metadata
+    });
+
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, code: 500, message: error.message });
+  }
+};
+
+
 const assignedProductController = {
   getAssignedProducts,
   getMyShopAssigndedProducts,
   toggleAssigndedProductStatus,
   removeProductFromShop,
   setCoinForProducts,
+  getMyShopApprovedProducts
 };
 module.exports = assignedProductController;
