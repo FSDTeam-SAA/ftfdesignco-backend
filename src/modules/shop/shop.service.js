@@ -23,7 +23,6 @@ const crateShopInDb = async (payload, email, files) => {
   });
   if (employee) throw new Error("You are already an employee");
 
-
   if (files?.companyLogo?.[0]) {
     const logoImage = files.companyLogo[0];
     const imageName = `${Date.now()}-${logoImage.originalname}`;
@@ -97,8 +96,7 @@ const toggleShopStatus = async (payload, shopId) => {
     { new: true }
   ).populate({
     path: "userId",
-    select:
-      "name email phone employeeCount isPaid",
+    select: "name email phone employeeCount isPaid",
   });
 
   await User.findOneAndUpdate(
@@ -128,7 +126,7 @@ const getAllShops = async (page, limit) => {
   const skip = (page - 1) * limit;
 
   const [shops, total] = await Promise.all([
-    Shop.find()
+    Shop.find({ status: "pending" })
       .populate({
         path: "userId",
         select: "name email shop isShopCreated isVerified",
