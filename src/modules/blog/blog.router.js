@@ -70,4 +70,3 @@ router.delete("/:id", auth(USER_ROLE.admin), deleteBlog);
 
 const blogRouter = router;
 module.exports = blogRouter;
-//------------------------- End of Blog Router-------------------------

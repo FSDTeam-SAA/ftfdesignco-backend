@@ -2,8 +2,16 @@ const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
 const AssignedProduct = require("./assignedProduct.model");
 
-const getAssignedProductForUser = async () => {
-  const result = await AssignedProduct.find()
+const getAssignedProductForUser = async (page, limit) => {
+  const skip = (page - 1) * limit;
+
+  // fetch total count for pagination
+  const total = await AssignedProduct.countDocuments({ status: "pending" });
+
+  // fetch paginated data
+  const result = await AssignedProduct.find({ status: "pending" })
+    .skip(skip)
+    .limit(limit)
     .populate({
       path: "productId",
       select: "title price quantity category",
@@ -18,7 +26,15 @@ const getAssignedProductForUser = async () => {
     })
     .exec();
 
-  return result;
+  return {
+    data: result,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 const getMyShopAssigndedProducts = async (
@@ -67,12 +83,12 @@ const getMyShopAssigndedProducts = async (
     // Optional filter by category name
     ...(categoryName
       ? [
-        {
-          $match: {
-            "product.category.title": { $regex: categoryName, $options: "i" },
+          {
+            $match: {
+              "product.category.title": { $regex: categoryName, $options: "i" },
+            },
           },
-        },
-      ]
+        ]
       : []),
 
     // Join with shop
@@ -190,7 +206,6 @@ const setCoinForProducts = async (email, payload, assignedProductId) => {
   return result;
 };
 
-
 const getMyShopApprovedProducts = async (email, query) => {
   const { search, category, minPrice, maxPrice, page = 1, limit = 10 } = query;
 
@@ -215,11 +230,11 @@ const getMyShopApprovedProducts = async (email, query) => {
         ...(category && { category }),
         ...(minPrice || maxPrice
           ? {
-            price: {
-              ...(minPrice && { $gte: Number(minPrice) }),
-              ...(maxPrice && { $lte: Number(maxPrice) }),
-            },
-          }
+              price: {
+                ...(minPrice && { $gte: Number(minPrice) }),
+                ...(maxPrice && { $lte: Number(maxPrice) }),
+              },
+            }
           : {}),
       },
       populate: {
@@ -252,17 +267,13 @@ const getMyShopApprovedProducts = async (email, query) => {
   };
 };
 
-
-
-
-
 const assignedProductService = {
   getAssignedProductForUser,
   getMyShopAssigndedProducts,
   toggleAssigndedProductStatus,
   removeProductFromShop,
   setCoinForProducts,
-  getMyShopApprovedProducts
+  getMyShopApprovedProducts,
 };
 
 module.exports = assignedProductService;

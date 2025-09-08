@@ -5,7 +5,11 @@ const USER_ROLE = require("../user/user.constant");
 
 const router = Router();
 
-router.get("/", auth(USER_ROLE.company_admin), assignedProductController.getAssignedProducts);
+router.get(
+  "/",
+  auth(USER_ROLE.admin),
+  assignedProductController.getAssignedProducts
+);
 
 router.get(
   "/my-shop",
@@ -18,7 +22,6 @@ router.get(
   auth(USER_ROLE.company_admin),
   assignedProductController.getMyShopApprovedProducts
 );
-
 
 router.put(
   "/status/:assignedProductId",

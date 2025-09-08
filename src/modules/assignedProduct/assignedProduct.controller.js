@@ -2,13 +2,19 @@ const assignedProductService = require("./assignedProduct.service");
 
 const getAssignedProducts = async (req, res) => {
   try {
-    const result = await assignedProductService.getAssignedProductForUser();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const result = await assignedProductService.getAssignedProductForUser(
+      page,
+      limit
+    );
 
     return res.status(200).json({
       success: true,
       code: 200,
       message: "Products fetched successfully",
-      data: result,
+      ...result, // includes data + pagination info
     });
   } catch (error) {
     console.error("Error fetching assigned products:", error);
@@ -17,7 +23,6 @@ const getAssignedProducts = async (req, res) => {
       .json({ success: false, code: 500, message: error.message });
   }
 };
-
 
 const getMyShopAssigndedProducts = async (req, res) => {
   try {
@@ -34,7 +39,6 @@ const getMyShopAssigndedProducts = async (req, res) => {
       email,
       { categoryName, minCoin, page: parseInt(page), limit: parseInt(limit) }
     );
-
 
     return res.status(200).json({
       success: true,
@@ -121,7 +125,6 @@ const setCoinForProducts = async (req, res) => {
   }
 };
 
-
 const getMyShopApprovedProducts = async (req, res) => {
   try {
     const { email } = req.user;
@@ -139,7 +142,6 @@ const getMyShopApprovedProducts = async (req, res) => {
       data: result.data,
       pagination: result.meta, // pagination metadata
     });
-
   } catch (error) {
     return res
       .status(500)
@@ -147,13 +149,12 @@ const getMyShopApprovedProducts = async (req, res) => {
   }
 };
 
-
 const assignedProductController = {
   getAssignedProducts,
   getMyShopAssigndedProducts,
   toggleAssigndedProductStatus,
   removeProductFromShop,
   setCoinForProducts,
-  getMyShopApprovedProducts
+  getMyShopApprovedProducts,
 };
 module.exports = assignedProductController;
