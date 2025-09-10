@@ -28,7 +28,7 @@ router.post(
     }
     next();
   },
-  auth(USER_ROLE.company_admin),
+  auth(USER_ROLE.admin),
   createCategory
 );
 
@@ -70,11 +70,7 @@ router.put(
   updateCategory
 );
 
-router.delete(
-  "/remove/:categoryId",
-  // auth(USER_ROLE.admin, USER_ROLE.company_admin),
-  deleteCategory
-);
+router.delete("/remove/:categoryId", auth(USER_ROLE.admin), deleteCategory);
 
 const categoryRouter = router;
 module.exports = categoryRouter;
