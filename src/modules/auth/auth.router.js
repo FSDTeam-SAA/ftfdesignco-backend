@@ -28,6 +28,7 @@ router.post(
 );
 
 router.post("/employee-login", authController.employeeLogin);
+
 router.post(
   "/employee-password",
   auth(USER_ROLE.employee),
