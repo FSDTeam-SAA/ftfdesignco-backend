@@ -29,7 +29,7 @@ router.post(
     }
     next();
   },
-  auth(USER_ROLE.company_admin),
+  auth(USER_ROLE.admin),
   addProduct
 );
 
