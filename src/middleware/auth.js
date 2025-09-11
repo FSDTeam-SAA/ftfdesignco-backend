@@ -9,7 +9,7 @@ const auth = (...roles) => {
       if (!token) {
         return res
           .status(401)
-          .json({ success: false, message: "Unauthorized" });
+          .json({ success: false, message: "Unauthorized! Please login" });
       }
 
       const verifiedUser = verifyToken(token, config.JWT_SECRET);
@@ -20,10 +20,12 @@ const auth = (...roles) => {
       }
       req.user = verifiedUser;
 
-      console.log('this is verified user', verifiedUser);
+      // console.log('this is verified user', verifiedUser);
 
       if (roles.length && !roles.includes(verifiedUser.role)) {
-        return res.status(403).json({ success: false, message: "Forbidden" });
+        return res
+          .status(403)
+          .json({ success: false, message: "You don't have access" });
       }
       next();
     } catch (error) {

@@ -71,13 +71,22 @@ const getAllOrdersFromShop = async (req, res) => {
 
 const getAllOrders = async (req, res) => {
   try {
-    const result = await orderService.getAllOrders();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const result = await orderService.getAllOrders(page, limit);
 
     return res.status(200).json({
       success: true,
       code: 200,
       message: "Orders fetched successfully",
-      data: result,
+      data: result.orders,
+      meta: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      },
     });
   } catch (error) {
     return res

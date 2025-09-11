@@ -8,7 +8,6 @@ const Order = require("./order.model");
 //? Logic add is: when order any product then it's quantity minus by admin added product.
 //! check there first.......................
 const orderProduct = async (payload, employeeId, employeeShopId) => {
-  console.log(employeeId);
   const { productId } = payload;
 
   const employee = await Employee.findOne({ employeeId, shop: employeeShopId });
@@ -25,21 +24,27 @@ const orderProduct = async (payload, employeeId, employeeShopId) => {
   const shop = await Shop.findById(employeeShopId);
   if (!shop) throw new Error("Shop not found.");
 
-  const shopProduct = shop.products.find((p) =>
-    p.productId.equals(product._id)
-  );
+  const haveProduct = await Product.find({
+    _id: productId,
+    shop: employeeShopId,
+  });
+  if (!haveProduct) throw new Error("Product not found in your shop.");
 
-  if (!shopProduct) {
-    throw new Error("Product not found in shop stock.");
-  }
+  // const shopProduct = shop.products.find((p) =>
+  //   p.productId.equals(product._id)
+  // );
 
-  if (shopProduct.productQuantity <= 0) {
-    throw new Error("Product is out of stock.");
-  }
+  // if (!shopProduct) {
+  //   throw new Error("Product not found in shop stock.");
+  // }
 
-  if (shop.totalGivenCoin < shopProduct.coin) {
-    throw new Error("You don't have enough coins.");
-  }
+  // if (shopProduct.productQuantity <= 0) {
+  //   throw new Error("Product is out of stock.");
+  // }
+
+  // if (shop.totalGivenCoin < shopProduct.coin) {
+  //   throw new Error("You don't have enough coins.");
+  // }
 
   const result = await Order.create({
     employeeId: employee._id,
@@ -48,22 +53,22 @@ const orderProduct = async (payload, employeeId, employeeShopId) => {
   });
 
   //? here the problem and some changes is coming........
-  await Shop.findOneAndUpdate(
-    { _id: shop._id, "products.productId": productId },
-    {
-      $inc: {
-        "products.$.productQuantity": -1,
-        totalUsedCoin: shopProduct.coin,
-      },
-    },
-    { new: true }
-  );
+  // await Shop.findOneAndUpdate(
+  //   { _id: shop._id, "products.productId": productId },
+  //   {
+  //     $inc: {
+  //       "products.$.productQuantity": -1,
+  //       totalUsedCoin: shopProduct.coin,
+  //     },
+  //   },
+  //   { new: true }
+  // );
 
-  await Employee.findOneAndUpdate(
-    { employeeId },
-    { $inc: { coin: -shopProduct.coin } },
-    { new: true }
-  );
+  // await Employee.findOneAndUpdate(
+  //   { employeeId },
+  //   { $inc: { coin: -shopProduct.coin } },
+  //   { new: true }
+  // );
 
   return result;
 };
@@ -130,22 +135,37 @@ const getAllOrdersFromShop = async (email) => {
   return result;
 };
 
-const getAllOrders = async () => {
-  const result = await Order.find()
-    .populate({
-      path: "employeeId",
-      select: "name employeeId",
-    })
-    .populate({
-      path: "productId",
-      select: "title price",
-    })
-    .populate({
-      path: "shopId",
-      select: "companyName companyId",
-    });
+const getAllOrders = async (page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
 
-  return result;
+  const [orders, total] = await Promise.all([
+    Order.find()
+      .populate({
+        path: "employeeId",
+        select: "name employeeId",
+      })
+      .populate({
+        path: "productId",
+        select: "title price",
+      })
+      .populate({
+        path: "shopId",
+        select: "companyName companyId",
+      })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 }), // latest first
+
+    Order.countDocuments(),
+  ]);
+
+  return {
+    orders,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
 };
 
 const placeOrderStatus = async (orderId, payload) => {
