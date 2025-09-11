@@ -10,6 +10,7 @@ const shopModel = new Schema(
       type: String,
       required: true,
       unique: true,
+      trim: true,
     },
     companyName: {
       type: String,
