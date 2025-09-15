@@ -1,35 +1,39 @@
+const { default: mongoose } = require("mongoose");
+const AssignedProduct = require("../assignedProduct/assignedProduct.model");
 const Employee = require("../employee/employee.model");
 const Product = require("../product/product.model");
 const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
 const Order = require("./order.model");
 
-//There are some logic problem in this function.... i cann't add logic employee is under vaild shop or not and product is under valid shop or not.
-//? Logic add is: when order any product then it's quantity minus by admin added product.
-//! check there first.......................
 const orderProduct = async (payload, employeeId, employeeShopId) => {
+  console.log({ payload, employeeId, employeeShopId });
   const { productId } = payload;
-
+  // console.log(payload);
   const employee = await Employee.findOne({ employeeId, shop: employeeShopId });
   if (!employee) throw new Error("Employee not found.");
-  console.log(employee.shop, employeeShopId);
 
-  if (employee.shop.toString() !== employeeShopId) {
+  if (employee.shop.toString() !== payload.shopId) {
     throw new Error("You are not employee under this company.");
   }
 
   const product = await Product.findById(productId);
   if (!product) throw new Error("Product not found.");
 
+  console.log("product data", product);
+
   const shop = await Shop.findById(employeeShopId);
   if (!shop) throw new Error("Shop not found.");
 
-  const haveProduct = await Product.find({
-    _id: productId,
-    shop: employeeShopId,
+  console.log("shop data", shop);
+
+  const haveProduct = await AssignedProduct.findOne({
+    productId: product._id,
+    shopId: shop._id,
   });
   if (!haveProduct) throw new Error("Product not found in your shop.");
 
+  console.log("my shop product", haveProduct);
   // const shopProduct = shop.products.find((p) =>
   //   p.productId.equals(product._id)
   // );
@@ -46,11 +50,11 @@ const orderProduct = async (payload, employeeId, employeeShopId) => {
   //   throw new Error("You don't have enough coins.");
   // }
 
-  const result = await Order.create({
-    employeeId: employee._id,
-    productId: product._id,
-    shopId: shop._id,
-  });
+  // const result = await Order.create({
+  //   employeeId: employee._id,
+  //   productId: product._id,
+  //   shopId: shop._id,
+  // });
 
   //? here the problem and some changes is coming........
   // await Shop.findOneAndUpdate(
@@ -70,7 +74,7 @@ const orderProduct = async (payload, employeeId, employeeShopId) => {
   //   { new: true }
   // );
 
-  return result;
+  // return result;
 };
 
 const getMyOrders = async (employeeId, page = 1, limit = 10) => {
