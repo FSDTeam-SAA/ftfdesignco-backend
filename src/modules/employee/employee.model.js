@@ -59,8 +59,8 @@ const employeeModel = new Schema({
     type: Map,
     of: new Schema({
       quantity: Number,
-      size: String,
-      coin: Number,
+      // size: String,
+      totalCoin: Number,
       productId: {
         type: Schema.Types.ObjectId,
         ref: "Product",

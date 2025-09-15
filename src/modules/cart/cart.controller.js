@@ -56,10 +56,44 @@ const removeFromCart = async (req, res) => {
   }
 };
 
+const incrementQuantity = async (req, res) => {
+  try {
+    const { employeeId } = req.user;
+    const { cartId } = req.params;
+    const result = await cartService.incrementQuantity(cartId, employeeId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Quantity increment successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+const decrementQuantity = async (req, res) => {
+  try {
+    const { employeeId } = req.user;
+    const { cartId } = req.params;
+    const result = await cartService.decrementQuantity(cartId, employeeId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Quantity decrement successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 const cartController = {
   addToCart,
   getMyOwnCart,
   removeFromCart,
+  incrementQuantity,
+  decrementQuantity,
 };
 
 module.exports = cartController;

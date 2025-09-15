@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const AssignedProduct = require("../assignedProduct/assignedProduct.model");
 const Employee = require("../employee/employee.model");
 const Product = require("../product/product.model");
@@ -21,11 +22,13 @@ const addToCart = async (employeeId, payload) => {
   });
   if (!assignProduct) throw new Error("Product not found in your shop.");
 
+  console.log(assignProduct);
+
   if (product.quantity <= 0) {
     throw new Error("Product is out of stock.");
   }
 
-  //   const cartItemKey = `cartData.${productId}`;
+  const totalCoin = quantity * assignProduct.coin;
 
   const result = await Employee.findOneAndUpdate(
     { employeeId },
@@ -34,8 +37,8 @@ const addToCart = async (employeeId, payload) => {
         [`cartData.${productId}`]: {
           productId,
           quantity,
-          size,
-          coin: assignProduct.coin,
+          // size,
+          totalCoin,
         },
       },
     },
@@ -46,7 +49,7 @@ const addToCart = async (employeeId, payload) => {
 };
 
 const getMyOwnCart = async (employeeId, page, limit) => {
-  const employee = await Employee.findOne({ employeeId }).lean(); 
+  const employee = await Employee.findOne({ employeeId }).lean();
 
   if (!employee) throw new Error("Employee not found.");
 
@@ -60,8 +63,22 @@ const getMyOwnCart = async (employeeId, page, limit) => {
 
   const paginatedCart = cartArray.slice(startIndex, endIndex);
 
+  // 🔹 Populate product info
+  const populatedCart = await Promise.all(
+    paginatedCart.map(async (item) => {
+      const product = await Product.findById(
+        new mongoose.Types.ObjectId(item.productId)
+      ).select("title price");
+
+      return {
+        ...item,
+        product: product ? product.toObject() : null,
+      };
+    })
+  );
+
   return {
-    cart: paginatedCart,
+    cart: populatedCart,
     total,
   };
 };
@@ -96,10 +113,96 @@ const removeFromCart = async (employeeId, cartItemId) => {
   return result;
 };
 
+const incrementQuantity = async (cartId, employeeId) => {
+  const employee = await Employee.findOne({ employeeId }).lean();
+  if (!employee) throw new Error("Employee not found.");
+
+  if (!employee.cartData) {
+    throw new Error("Cart is empty.");
+  }
+
+  const cartEntry = Object.values(employee.cartData).find(
+    (item) => item._id?.toString() === cartId.toString()
+  );
+
+  if (!cartEntry) {
+    throw new Error("Cart item not found.");
+  }
+
+  const product = await Product.findById(cartEntry.productId);
+  if (!product) {
+    throw new Error("Product not found.");
+  }
+
+  if (cartEntry.quantity >= product.quantity) {
+    throw new Error("Not enough stock available to increase quantity.");
+  }
+
+  const newQuantity = cartEntry.quantity + 1;
+  const newTotalCoin = newQuantity * product.price;
+
+  const result = await Employee.findOneAndUpdate(
+    { employeeId },
+    {
+      $set: {
+        [`cartData.${cartEntry.productId.toString()}.quantity`]: newQuantity,
+        [`cartData.${cartEntry.productId.toString()}.totalCoin`]: newTotalCoin,
+      },
+    },
+    { new: true }
+  ).lean();
+
+  return result.cartData;
+};
+
+const decrementQuantity = async (cartId, employeeId) => {
+  const employee = await Employee.findOne({ employeeId }).lean();
+  if (!employee) throw new Error("Employee not found.");
+
+  if (!employee.cartData) {
+    throw new Error("Cart is empty.");
+  }
+
+  const cartEntry = Object.values(employee.cartData).find(
+    (item) => item._id?.toString() === cartId.toString()
+  );
+
+  if (!cartEntry) {
+    throw new Error("Cart item not found.");
+  }
+
+  const product = await Product.findById(cartEntry.productId);
+  if (!product) {
+    throw new Error("Product not found.");
+  }
+
+  if (cartEntry.quantity <= 1) {
+    throw new Error("Quantity cannot be less than 1.");
+  }
+
+  const newQuantity = cartEntry.quantity - 1;
+  const newTotalCoin = newQuantity * product.price;
+
+  const updatedEmployee = await Employee.findOneAndUpdate(
+    { employeeId },
+    {
+      $set: {
+        [`cartData.${cartEntry.productId.toString()}.quantity`]: newQuantity,
+        [`cartData.${cartEntry.productId.toString()}.totalCoin`]: newTotalCoin,
+      },
+    },
+    { new: true }
+  ).lean();
+
+  return updatedEmployee.cartData;
+};
+
 const cartService = {
   addToCart,
   getMyOwnCart,
   removeFromCart,
+  incrementQuantity,
+  decrementQuantity,
 };
 
 module.exports = cartService;

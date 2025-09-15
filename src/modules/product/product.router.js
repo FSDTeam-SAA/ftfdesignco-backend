@@ -69,7 +69,7 @@ router.delete("/:productId", auth(USER_ROLE.admin), deleteProductById);
 
 router.post(
   "/add-product",
-  auth(USER_ROLE.company_admin, USER_ROLE.admin),
+  auth(USER_ROLE.company_admin),
   addProductToShop
 );
 

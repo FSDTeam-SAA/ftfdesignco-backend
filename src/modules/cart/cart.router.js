@@ -8,6 +8,18 @@ const router = Router();
 router.post("/add-to-cart", auth(USER_ROLE.employee), cartController.addToCart);
 router.get("/my-cart", auth(USER_ROLE.employee), cartController.getMyOwnCart);
 
+router.put(
+  "/increment/:cartId",
+  auth(USER_ROLE.employee),
+  cartController.incrementQuantity
+);
+
+router.put(
+  "/decrement/:cartId",
+  auth(USER_ROLE.employee),
+  cartController.decrementQuantity
+);
+
 router.delete(
   "/:cartId",
   auth(USER_ROLE.employee),
