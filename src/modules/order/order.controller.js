@@ -3,7 +3,7 @@ const orderService = require("./order.service");
 const orderProduct = async (req, res) => {
   try {
     const { employeeId, shop } = req.user;
-    const result = await orderService.orderProduct(req.body, employeeId, shop);
+    const result = await orderService.orderProduct(employeeId, shop, req.body);
 
     return res.status(200).json({
       success: true,

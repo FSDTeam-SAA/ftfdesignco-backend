@@ -152,7 +152,7 @@ const incrementQuantity = async (cartId, employeeId) => {
     { new: true }
   ).lean();
 
-  return result.cartData;
+  return result;
 };
 
 const decrementQuantity = async (cartId, employeeId) => {
@@ -194,7 +194,7 @@ const decrementQuantity = async (cartId, employeeId) => {
     { new: true }
   ).lean();
 
-  return updatedEmployee.cartData;
+  return updatedEmployee;
 };
 
 const cartService = {
