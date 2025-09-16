@@ -6,75 +6,61 @@ const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
 const Order = require("./order.model");
 
-const orderProduct = async (payload, employeeId, employeeShopId) => {
-  console.log({ payload, employeeId, employeeShopId });
-  const { productId } = payload;
-  // console.log(payload);
-  const employee = await Employee.findOne({ employeeId, shop: employeeShopId });
+const orderProduct = async (employeeId, employeeShopId, payload) => {
+  const employee = await Employee.findOne({ employeeId });
   if (!employee) throw new Error("Employee not found.");
-
-  if (employee.shop.toString() !== payload.shopId) {
-    throw new Error("You are not employee under this company.");
-  }
-
-  const product = await Product.findById(productId);
-  if (!product) throw new Error("Product not found.");
-
-  console.log("product data", product);
 
   const shop = await Shop.findById(employeeShopId);
   if (!shop) throw new Error("Shop not found.");
 
-  console.log("shop data", shop);
+  // ✅ Map থেকে value নেওয়া হচ্ছে
+  const cartItems = Array.from(employee.cartData?.values() || []);
 
-  const haveProduct = await AssignedProduct.findOne({
-    productId: product._id,
-    shopId: shop._id,
+  if (!cartItems.length) throw new Error("Cart is empty.");
+
+  const orderItems = [];
+
+  for (const item of cartItems) {
+    const productId =
+      item.productId?._id || item.productId?.toString?.() || item.productId;
+    if (!productId) {
+      throw new Error("Invalid productId in cart item.");
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) throw new Error(`Product not found: ${productId}`);
+
+    if (item.quantity > product.quantity) {
+      throw new Error(`Not enough stock for product: ${product.title}.`);
+    }
+
+    orderItems.push({
+      productId: product._id,
+      title: product.title,
+      price: product.price,
+      quantity: item.quantity,
+      totalCoin: item.totalCoin,
+    });
+
+    await Product.findByIdAndUpdate(product._id, {
+      $inc: { quantity: -item.quantity },
+    });
+  }
+
+  const order = await Order.create({
+    employee: employee._id,
+    shop: shop._id,
+    items: orderItems,
+    status: "pending",
+    ...payload,
+    totalPayCoin: orderItems.reduce((acc, item) => acc + item.totalCoin, 0),
   });
-  if (!haveProduct) throw new Error("Product not found in your shop.");
 
-  console.log("my shop product", haveProduct);
-  // const shopProduct = shop.products.find((p) =>
-  //   p.productId.equals(product._id)
-  // );
+  // Clear cart
+  employee.cartData = new Map();
+  await employee.save();
 
-  // if (!shopProduct) {
-  //   throw new Error("Product not found in shop stock.");
-  // }
-
-  // if (shopProduct.productQuantity <= 0) {
-  //   throw new Error("Product is out of stock.");
-  // }
-
-  // if (shop.totalGivenCoin < shopProduct.coin) {
-  //   throw new Error("You don't have enough coins.");
-  // }
-
-  // const result = await Order.create({
-  //   employeeId: employee._id,
-  //   productId: product._id,
-  //   shopId: shop._id,
-  // });
-
-  //? here the problem and some changes is coming........
-  // await Shop.findOneAndUpdate(
-  //   { _id: shop._id, "products.productId": productId },
-  //   {
-  //     $inc: {
-  //       "products.$.productQuantity": -1,
-  //       totalUsedCoin: shopProduct.coin,
-  //     },
-  //   },
-  //   { new: true }
-  // );
-
-  // await Employee.findOneAndUpdate(
-  //   { employeeId },
-  //   { $inc: { coin: -shopProduct.coin } },
-  //   { new: true }
-  // );
-
-  // return result;
+  return order;
 };
 
 const getMyOrders = async (employeeId, page = 1, limit = 10) => {

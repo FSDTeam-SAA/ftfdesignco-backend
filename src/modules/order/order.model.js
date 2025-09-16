@@ -1,27 +1,35 @@
 const { Schema, model } = require("mongoose");
 
-const OrderModel = Schema({
-  employeeId: {
-    type: Schema.Types.ObjectId,
-    ref: "Employee",
-    // required: true,
+const OrderModel = new Schema(
+  {
+    employee: { type: Schema.Types.ObjectId, ref: "Employee" },
+    shop: { type: Schema.Types.ObjectId, ref: "Shop" },
+    items: [
+      {
+        product: {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
+          // required: true,
+        },
+        title: { type: String },
+        price: { type: Number },
+        quantity: { type: Number },
+        totalCoin: { type: Number },
+      },
+    ],
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    country: { type: String },
+    zipCode: { type: Number },
+    name: { type: String },
+    address: { type: String },
+    totalPayCoin: { type: Number },
   },
-  productId: {
-    type: Schema.Types.ObjectId,
-    ref: "Product",
-    required: true,
-  },
-  shopId: {
-    type: Schema.Types.ObjectId,
-    ref: "Shop",
-    // required: true,
-  },
-  status: {
-    type: String,
-    enum: ["pending", "approved", "rejected"],
-    default: "pending",
-  },
-});
+  { timestamps: true }
+);
 
 const Order = model("Order", OrderModel);
 module.exports = Order;
