@@ -103,7 +103,9 @@ const employeeCoinGive = async (email, payload, employeeId) => {
 
   const result = await Employee.findByIdAndUpdate(
     employeeId,
-    { $inc: { coin: payload.coin } },
+    {
+      $inc: { coin: payload.coin, remainingCoin: payload.coin },
+    },
     { new: true }
   )
     .populate({
