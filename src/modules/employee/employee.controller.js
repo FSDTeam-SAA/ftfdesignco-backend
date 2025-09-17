@@ -72,7 +72,7 @@ const getEmployeeProfile = async (req, res) => {
 const getEmployeeShopProducts = async (req, res) => {
   try {
     const { employeeId, shop } = req.user;
-    const { page = 1, limit = 10 } = req.query; // Default pagination values
+    const { page = 1, limit = 10 } = req.query;
 
     const result = await employeeService.getEmployeeShopProducts(
       employeeId,
@@ -96,6 +96,7 @@ const getEmployeeShopProducts = async (req, res) => {
     res.status(500).json({ status: false, code: 500, message: error.message });
   }
 };
+
 const updateEmployeeProfile = async (req, res) => {
   try {
     console.log(req.user);
@@ -117,6 +118,22 @@ const updateEmployeeProfile = async (req, res) => {
   }
 };
 
+const deletedEmployee = async (req, res) => {
+  try {
+    const { email } = req.user;
+    const { employeeId } = req.params;
+    await employeeService.deletedEmployee(employeeId, email);
+
+    return res.status(200).json({
+      status: true,
+      code: 200,
+      message: "Employee deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ status: false, code: 500, message: error.message });
+  }
+};
+
 const employeeController = {
   createEmployee,
   getMyEmployees,
@@ -124,5 +141,6 @@ const employeeController = {
   getEmployeeProfile,
   getEmployeeShopProducts,
   updateEmployeeProfile,
+  deletedEmployee,
 };
 module.exports = employeeController;

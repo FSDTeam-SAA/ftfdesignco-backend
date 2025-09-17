@@ -200,6 +200,27 @@ const updateEmployeeOwnProfile = async (employeeId, payload, file) => {
   return result;
 };
 
+const deletedEmployee = async (employeeId, email) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found");
+
+  const orderData = await Order.findOne({ employeeId });
+  if (orderData) {
+    throw new Error(
+      "Cannot delete employee because there are existing orders assigned"
+    );
+  }
+
+  const result = await Employee.findOneAndDelete({
+    _id: employeeId,
+    shop: user.shop,
+  });
+
+  if (!result) {
+    throw new error("Employee is not exist");
+  }
+};
+
 const employeeService = {
   createEmployeeInDb,
   getMyEmployees,
@@ -207,5 +228,6 @@ const employeeService = {
   getEmployeeProfile,
   getEmployeeShopProducts,
   updateEmployeeOwnProfile,
+  deletedEmployee,
 };
 module.exports = employeeService;
