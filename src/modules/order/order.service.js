@@ -13,6 +13,8 @@ const orderProduct = async (employeeId, employeeShopId, payload) => {
   const shop = await Shop.findById(employeeShopId);
   if (!shop) throw new Error("Shop not found.");
 
+  if (employee.remainingCoin === 0)
+    throw new Error("You don't have enough coin.");
 
   const cartItems = Array.from(employee.cartData?.values() || []);
   if (!cartItems.length) throw new Error("Cart is empty.");
@@ -46,13 +48,19 @@ const orderProduct = async (employeeId, employeeShopId, payload) => {
     });
   }
 
+  const totalCoin = orderItems.reduce((acc, item) => acc + item.totalCoin, 0);
+
   const order = await Order.create({
     employee: employee._id,
     shop: shop._id,
     items: orderItems,
     status: "pending",
     ...payload,
-    totalPayCoin: orderItems.reduce((acc, item) => acc + item.totalCoin, 0),
+    totalPayCoin: totalCoin,
+  });
+
+  await Employee.findByIdAndUpdate(employee._id, {
+    $inc: { remainingCoin: -totalCoin },
   });
 
   // Clear cart
@@ -63,65 +71,62 @@ const orderProduct = async (employeeId, employeeShopId, payload) => {
 };
 
 const getMyOrders = async (employeeId, page = 1, limit = 10) => {
-  const skip = (page - 1) * limit;
-
   const employee = await Employee.findOne({ employeeId });
   if (!employee) throw new Error("Employee not found.");
 
-  const [orders, totalOrders] = await Promise.all([
-    Order.find({ employeeId: employee._id })
-      .skip(skip)
-      .limit(limit)
-      .populate({
-        path: "employeeId",
-        select: "name employeeId",
-      })
-      .populate({
-        path: "productId",
-        select: "title price",
-      })
-      .populate({
-        path: "shopId",
-        select: "companyName companyId",
-      }),
-    Order.countDocuments({ employeeId: employee._id }),
-  ]);
+  page = Math.max(1, parseInt(page));
+  limit = Math.max(1, parseInt(limit));
 
-  const totalPages = Math.ceil(totalOrders / limit);
+  const totalOrders = await Order.countDocuments({
+    employee: employee._id,
+    shop: employee.shop,
+  });
+
+  const orders = await Order.find({
+    employee: employee._id,
+    shop: employee.shop,
+  })
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
 
   return {
     data: orders,
     pagination: {
-      totalOrders,
-      currentPage: page,
-      totalPages,
+      total: totalOrders,
+      page,
       limit,
+      totalPages: Math.ceil(totalOrders / limit),
     },
   };
 };
 
-const getAllOrdersFromShop = async (email) => {
+const getAllOrdersFromShop = async (email, page = 1, limit = 10) => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("User not found.");
 
   const shop = await Shop.findById(user.shop);
   if (!shop) throw new Error("Shop not found.");
 
-  const result = await Order.find({ shopId: shop._id })
-    .populate({
-      path: "employeeId",
-      select: "name employeeId",
-    })
-    .populate({
-      path: "productId",
-      select: "title price",
-    })
-    .populate({
-      path: "shopId",
-      select: "companyName companyId",
-    });
+  page = Math.max(1, parseInt(page));
+  limit = Math.max(1, parseInt(limit));
 
-  return result;
+  const totalOrders = await Order.countDocuments({ shop: shop._id });
+
+  const orders = await Order.find({ shop: shop._id })
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  return {
+    data: orders,
+    pagination: {
+      total: totalOrders,
+      page,
+      limit,
+      totalPages: Math.ceil(totalOrders / limit),
+    },
+  };
 };
 
 const getAllOrders = async (page = 1, limit = 10) => {
@@ -168,7 +173,28 @@ const placeOrderStatus = async (orderId, payload) => {
     }
   );
 
+  if (status === "rejected") {
+    await Employee.findByIdAndUpdate(result.employee, {
+      $inc: { remainingCoin: result.totalPayCoin },
+    });
+  }
+
   return result;
+};
+
+const deletedRejectedOrder = async (orderId) => {
+  const order = await Order.findById(orderId);
+  if (!order) throw new Error("Order not found.");
+
+  if (order.status !== "rejected") throw new Error("Order is not rejected.");
+
+  const result = await Order.findByIdAndDelete({
+    _id: orderId,
+    status: "rejected",
+  });
+
+  if (!result) throw new Error("Order not found.");
+
 };
 
 const orderService = {
@@ -177,6 +203,7 @@ const orderService = {
   getAllOrdersFromShop,
   getAllOrders,
   placeOrderStatus,
+  deletedRejectedOrder,
 };
 
 module.exports = orderService;

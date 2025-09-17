@@ -26,5 +26,11 @@ router.put(
   orderController.placeOrderStatus
 );
 
+router.delete(
+  "/remove-rejected-order/:orderId",
+  auth(USER_ROLE.company_admin, USER_ROLE.employee),
+  orderController.deletedRejectedOrder
+);
+
 const orderRouter = router;
 module.exports = orderRouter;

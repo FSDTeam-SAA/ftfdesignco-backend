@@ -22,10 +22,12 @@ const addToCart = async (employeeId, payload) => {
   });
   if (!assignProduct) throw new Error("Product not found in your shop.");
 
-  console.log(assignProduct);
-
   if (product.quantity <= 0) {
     throw new Error("Product is out of stock.");
+  }
+
+  if (assignProduct.coin > employee.remainingCoin) {
+    throw new Error("You don't have enough coin.");
   }
 
   const totalCoin = quantity * assignProduct.coin;

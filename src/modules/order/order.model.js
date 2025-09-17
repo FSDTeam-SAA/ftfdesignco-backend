@@ -19,7 +19,7 @@ const OrderModel = new Schema(
     ],
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
+      enum: ["pending", "rejected", "delivered"],
       default: "pending",
     },
     country: { type: String },
