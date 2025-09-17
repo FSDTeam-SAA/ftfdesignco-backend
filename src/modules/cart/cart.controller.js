@@ -44,7 +44,7 @@ const removeFromCart = async (req, res) => {
   try {
     const { employeeId } = req.user;
     const { cartId } = req.params;
-    const result = await cartService.removeFromCart(employeeId, cartId);
+    await cartService.removeFromCart(employeeId, cartId);
 
     return res.status(200).json({
       success: true,
