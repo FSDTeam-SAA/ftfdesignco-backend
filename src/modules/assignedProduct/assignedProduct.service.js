@@ -1,34 +1,34 @@
+const Employee = require("../employee/employee.model");
 const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
 const AssignedProduct = require("./assignedProduct.model");
 
-const getAssignedProductForUser = async (page, limit) => {
+const getAssignedProductForUser = async (employeeId, page = 1, limit = 10) => {
+  const employeeData = await Employee.findOne({ employeeId }).populate("shop");
+  if (!employeeData) throw new Error("Employee not found.");
+
+  const filter = {
+    shopId: employeeData.shop._id,
+    status: "approved",
+  };
+
   const skip = (page - 1) * limit;
 
-  // fetch total count for pagination
-  const total = await AssignedProduct.countDocuments({ status: "pending" });
-
-  // fetch paginated data
-  const result = await AssignedProduct.find({ status: "pending" })
-    .skip(skip)
-    .limit(limit)
-    .populate({
-      path: "productId",
-      select: "title price quantity category",
-    })
-    .populate({
-      path: "userId",
-      select: "name email",
-    })
-    .populate({
-      path: "shopId",
-      select: "companyName companyId companyAddress",
-    })
-    .exec();
+  const [assignedProducts, total] = await Promise.all([
+    AssignedProduct.find(filter)
+      .populate("productId")
+      .populate({
+        path: "shopId",
+        select: "companyName companyAddress",
+      })
+      .skip(skip)
+      .limit(limit),
+    AssignedProduct.countDocuments(filter),
+  ]);
 
   return {
-    data: result,
-    pagination: {
+    data: assignedProducts,
+    meta: {
       total,
       page,
       limit,

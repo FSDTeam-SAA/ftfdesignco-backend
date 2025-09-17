@@ -12,6 +12,12 @@ router.get(
 );
 
 router.get(
+  "/shop-products",
+  auth(USER_ROLE.employee),
+  assignedProductController.getAssignedProductForUser
+);
+
+router.get(
   "/my-shop",
   auth(USER_ROLE.company_admin),
   assignedProductController.getMyShopAssigndedProducts
@@ -19,7 +25,7 @@ router.get(
 
 router.get(
   "/my-shop/approved",
-  auth(USER_ROLE.company_admin),
+  auth(USER_ROLE.company_admin, USER_ROLE.employee),
   assignedProductController.getMyShopApprovedProducts
 );
 

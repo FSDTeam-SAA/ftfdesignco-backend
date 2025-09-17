@@ -149,6 +149,31 @@ const getMyShopApprovedProducts = async (req, res) => {
   }
 };
 
+const getAssignedProductForUser = async (req, res) => {
+  try {
+    const { employeeId } = req.user;
+    const { page = 1, limit = 10 } = req.query; // query params
+
+    const result = await assignedProductService.getAssignedProductForUser(
+      employeeId,
+      Number(page),
+      Number(limit)
+    );
+
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Products fetched successfully",
+      data: result.data,
+      pagination: result.meta,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, code: 500, message: error.message });
+  }
+};
+
 const assignedProductController = {
   getAssignedProducts,
   getMyShopAssigndedProducts,
@@ -156,5 +181,6 @@ const assignedProductController = {
   removeProductFromShop,
   setCoinForProducts,
   getMyShopApprovedProducts,
+  getAssignedProductForUser,
 };
 module.exports = assignedProductController;
