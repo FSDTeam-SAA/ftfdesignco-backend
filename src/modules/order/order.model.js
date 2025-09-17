@@ -15,6 +15,7 @@ const OrderModel = new Schema(
         price: { type: Number },
         quantity: { type: Number },
         totalCoin: { type: Number },
+        image: { type: String },
       },
     ],
     status: {

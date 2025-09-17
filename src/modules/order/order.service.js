@@ -41,6 +41,7 @@ const orderProduct = async (employeeId, employeeShopId, payload) => {
       price: product.price,
       quantity: item.quantity,
       totalCoin: item.totalCoin,
+      image: product.productImage,
     });
 
     await Product.findByIdAndUpdate(product._id, {
@@ -194,7 +195,6 @@ const deletedRejectedOrder = async (orderId) => {
   });
 
   if (!result) throw new Error("Order not found.");
-
 };
 
 const orderService = {
