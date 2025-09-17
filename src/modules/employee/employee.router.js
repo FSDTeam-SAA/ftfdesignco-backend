@@ -57,5 +57,11 @@ router.patch(
   employeeController.updateEmployeeProfile
 );
 
+router.delete(
+  "/remove/:employeeId",
+  auth(USER_ROLE.company_admin),
+  employeeController.deletedEmployee
+);
+
 const employeeRouter = router;
 module.exports = employeeRouter;

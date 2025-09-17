@@ -272,7 +272,7 @@ const cancelMyShopProduct = async (assignedProductId, email) => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("User not found");
 
-  if (!user.shop) throw new Error("User does not belong to any shop");
+  if (!user.shop) throw new Error("shop not found");
   const shop = await Shop.findById(user.shop);
   if (!shop) throw new Error("Shop not found");
 
