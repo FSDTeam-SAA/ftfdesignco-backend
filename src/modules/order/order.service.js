@@ -13,9 +13,8 @@ const orderProduct = async (employeeId, employeeShopId, payload) => {
   const shop = await Shop.findById(employeeShopId);
   if (!shop) throw new Error("Shop not found.");
 
-  // ✅ Map থেকে value নেওয়া হচ্ছে
-  const cartItems = Array.from(employee.cartData?.values() || []);
 
+  const cartItems = Array.from(employee.cartData?.values() || []);
   if (!cartItems.length) throw new Error("Cart is empty.");
 
   const orderItems = [];
