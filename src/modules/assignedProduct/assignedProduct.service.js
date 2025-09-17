@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Employee = require("../employee/employee.model");
 const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
@@ -267,6 +268,29 @@ const getMyShopApprovedProducts = async (email, query) => {
   };
 };
 
+const cancelMyShopProduct = async (assignedProductId, email) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found");
+
+  if (!user.shop) throw new Error("User does not belong to any shop");
+  const shop = await Shop.findById(user.shop);
+  if (!shop) throw new Error("Shop not found");
+
+  const assignedProduct = await AssignedProduct.findById(assignedProductId);
+
+  const result = await AssignedProduct.findOneAndUpdate(
+    { _id: assignedProduct._id, shopId: shop._id },
+    { status: "cancelled" },
+    { new: true }
+  );
+
+  if (!result) {
+    throw new Error("Assigned product not found");
+  }
+
+  return result;
+};
+
 const assignedProductService = {
   getAssignedProductForUser,
   getMyShopAssigndedProducts,
@@ -274,6 +298,7 @@ const assignedProductService = {
   removeProductFromShop,
   setCoinForProducts,
   getMyShopApprovedProducts,
+  cancelMyShopProduct,
 };
 
 module.exports = assignedProductService;

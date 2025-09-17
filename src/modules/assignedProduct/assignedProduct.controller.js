@@ -174,6 +174,28 @@ const getAssignedProductForUser = async (req, res) => {
   }
 };
 
+const cancelMyShopProduct = async (req, res) => {
+  try {
+    const { email } = req.user;
+    const { assignedProductId } = req.params;
+    const result = await assignedProductService.cancelMyShopProduct(
+      assignedProductId,
+      email
+    );
+
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Product cancelled successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, code: 500, message: error.message });
+  }
+};
+
 const assignedProductController = {
   getAssignedProducts,
   getMyShopAssigndedProducts,
@@ -182,5 +204,6 @@ const assignedProductController = {
   setCoinForProducts,
   getMyShopApprovedProducts,
   getAssignedProductForUser,
+  cancelMyShopProduct,
 };
 module.exports = assignedProductController;

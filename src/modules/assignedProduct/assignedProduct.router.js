@@ -48,5 +48,11 @@ router.put(
   assignedProductController.setCoinForProducts
 );
 
+router.put(
+  "/shop-product/:assignedProductId",
+  auth(USER_ROLE.company_admin),
+  assignedProductController.cancelMyShopProduct
+);
+
 const assignedProduct = router;
 module.exports = assignedProduct;
