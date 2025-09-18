@@ -178,6 +178,10 @@ const placeOrderStatus = async (orderId, payload) => {
     await Employee.findByIdAndUpdate(result.employee, {
       $inc: { remainingCoin: result.totalPayCoin },
     });
+  } else if (status === "delivered") {
+    await Employee.findByIdAndUpdate(result.employee, {
+      $inc: { totalOrder: 1 },
+    });
   }
 
   return result;

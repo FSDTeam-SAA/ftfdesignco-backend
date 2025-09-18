@@ -52,6 +52,19 @@ const userModel = new Schema(
       type: Number,
       default: 0,
     },
+    dateOfBirth: {
+      type: Date,
+      default: null,
+    },
+    gender: {
+      type: String,
+      default: null,
+      enum: ["male", "female"],
+    },
+    address: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true, versionKey: false }
 );
