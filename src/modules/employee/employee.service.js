@@ -207,11 +207,12 @@ const deletedEmployee = async (employeeId, email) => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("User not found");
 
-  const orderData = await Order.findOne({ employeeId });
+  const orderData = await Order.findOne({
+    employeeId,
+    status: { $in: ["pending", "approved"] },
+  });
   if (orderData) {
-    throw new Error(
-      "Cannot delete employee because there are existing orders assigned"
-    );
+    throw new Error("Cannot delete employee having existing orders.");
   }
 
   const result = await Employee.findOneAndDelete({
