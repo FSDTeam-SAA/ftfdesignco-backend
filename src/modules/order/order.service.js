@@ -152,7 +152,6 @@ const getAllOrders = async (page = 1, limit = 10) => {
   };
 };
 
-
 const placeOrderStatus = async (orderId, payload) => {
   const { status } = payload;
 
@@ -271,6 +270,7 @@ const getMyCompanySales = async (
   };
 };
 
+//! this api will remove i think_________________________________________
 const getSalesSummary = async (email) => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("User not found.");

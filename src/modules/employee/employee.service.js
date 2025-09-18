@@ -1,5 +1,6 @@
 const { sendImageToCloudinary } = require("../../utils/cloudnary");
 const AssignedProduct = require("../assignedProduct/assignedProduct.model");
+const Order = require("../order/order.model");
 const { Payment } = require("../payment/payment.model");
 const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
