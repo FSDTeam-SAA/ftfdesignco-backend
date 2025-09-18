@@ -16,6 +16,7 @@ const OrderModel = new Schema(
         quantity: { type: Number },
         totalCoin: { type: Number },
         image: { type: String },
+        productId: { type: Schema.Types.ObjectId, ref: "Product" },
       },
     ],
     status: {
