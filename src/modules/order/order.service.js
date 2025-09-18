@@ -1,5 +1,3 @@
-const { default: mongoose } = require("mongoose");
-const AssignedProduct = require("../assignedProduct/assignedProduct.model");
 const Employee = require("../employee/employee.model");
 const Product = require("../product/product.model");
 const Shop = require("../shop/shop.model");
@@ -132,29 +130,28 @@ const getAllOrdersFromShop = async (email, page = 1, limit = 10) => {
 };
 
 const getAllOrders = async (page = 1, limit = 10) => {
-  const skip = (page - 1) * limit;
+  page = parseInt(page);
+  limit = parseInt(limit);
 
-  const [orders, total] = await Promise.all([
-    Order.find()
-      .populate({
-        path: "employee",
-        select: "name employeeId",
-      })
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 }), // latest first
+  const total = await Order.countDocuments();
 
-    Order.countDocuments(),
-  ]);
+  const orders = await Order.find()
+    .populate("shop", "companyName")
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(total / limit);
 
   return {
     orders,
     total,
     page,
     limit,
-    totalPages: Math.ceil(total / limit),
+    totalPages,
   };
 };
+
 
 const placeOrderStatus = async (orderId, payload) => {
   const { status } = payload;
@@ -274,6 +271,39 @@ const getMyCompanySales = async (
   };
 };
 
+const getSalesSummary = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found.");
+
+  const shop = await Shop.findById(user.shop);
+  if (!shop) throw new Error("Shop not found.");
+
+  const orders = await Order.find({ shop: shop._id, status: "delivered" });
+
+  if (orders.length === 0) {
+    return res.status(400).json({ success: false, message: "No orders found" });
+  }
+
+  const totalProductPrice = orders.reduce(
+    (acc, o) =>
+      acc + o.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    0
+  );
+
+  const paymentSuccess = true;
+
+  if (paymentSuccess) {
+    await Order.updateMany(
+      { shop: shop._id, status: "delivered" },
+      { $set: { status: "paid" } }
+    );
+  }
+
+  return {
+    totalPaid: totalProductPrice,
+  };
+};
+
 const orderService = {
   orderProduct,
   getMyOrders,
@@ -282,6 +312,7 @@ const orderService = {
   placeOrderStatus,
   deletedRejectedOrder,
   getMyCompanySales,
+  getSalesSummary,
 };
 
 module.exports = orderService;

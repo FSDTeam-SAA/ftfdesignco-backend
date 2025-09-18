@@ -34,6 +34,9 @@ const employeeModel = new Schema({
   roadOrArea: {
     type: String,
   },
+  postalCode: {
+    type: String,
+  },
   imageLink: { type: String, default: null },
   phone: {
     type: String,
