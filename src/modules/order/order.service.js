@@ -42,6 +42,7 @@ const orderProduct = async (employeeId, employeeShopId, payload) => {
       quantity: item.quantity,
       totalCoin: item.totalCoin,
       image: product.productImage,
+      productId: product._id,
     });
 
     await Product.findByIdAndUpdate(product._id, {
@@ -202,18 +203,16 @@ const getMyCompanySales = async (
   const user = await User.findOne({ email });
   if (!user) throw new Error("User not found.");
 
-
   const shop = await Shop.findById(user.shop);
   if (!shop) throw new Error("Shop not found.");
 
+  const query = { shop: shop._id, status: "delivered" };
 
-  const query = { shop: shop._id };
   if (searchEmployeeId) {
-
     const employee = await Employee.findOne({ employeeId: searchEmployeeId });
     if (!employee) throw new Error("Employee not found.");
 
-    query.employee = employee._id; 
+    query.employee = employee._id;
   }
 
   const skip = (page - 1) * limit;
@@ -225,19 +224,22 @@ const getMyCompanySales = async (
     Order.countDocuments(query),
   ]);
 
-
   const productSales = {};
   let totalUserCoin = 0;
+  let totalProductPrice = 0;
 
   orders.forEach((order) => {
     totalUserCoin += order.totalPayCoin || 0;
 
     order.items.forEach((item) => {
+      totalProductPrice += (item.price || 0) * (item.quantity || 0);
+
       if (!productSales[item.title]) {
         productSales[item.title] = {
           productName: item.title,
           quantity: 0,
           coins: 0,
+          totalPrice: 0,
           image: item.image || null,
           employees: [],
         };
@@ -245,6 +247,8 @@ const getMyCompanySales = async (
 
       productSales[item.title].quantity += item.quantity;
       productSales[item.title].coins += item.totalCoin;
+      productSales[item.title].totalPrice +=
+        (item.price || 0) * (item.quantity || 0);
 
       if (order.employee) {
         productSales[item.title].employees.push({
@@ -265,10 +269,10 @@ const getMyCompanySales = async (
     },
     totalProducts: Object.keys(productSales).length,
     totalUserCoin,
+    totalProductPrice,
     data: Object.values(productSales),
   };
 };
-
 
 const orderService = {
   orderProduct,
