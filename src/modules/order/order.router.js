@@ -20,6 +20,12 @@ router.get(
   orderController.getAllOrdersFromShop
 );
 
+router.get(
+  "/my-sales",
+  auth(USER_ROLE.company_admin),
+  orderController.getMyCompanySales
+);
+
 router.put(
   "/status/:orderId",
   // auth(USER_ROLE.company_admin),

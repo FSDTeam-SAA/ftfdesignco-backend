@@ -131,6 +131,34 @@ const deletedRejectedOrder = async (req, res) => {
   }
 };
 
+const getMyCompanySales = async (req, res) => {
+  try {
+    const { email } = req.user;
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const searchEmployeeId = req.query.employeeId || null;
+
+    const result = await orderService.getMyCompanySales(
+      email,
+      page,
+      limit,
+      searchEmployeeId
+    );
+
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Company sales fetched successfully",
+      ...result,
+    });
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ success: false, code: 400, message: error.message });
+  }
+};
+
 const orderController = {
   orderProduct,
   getMyOrder,
@@ -138,6 +166,7 @@ const orderController = {
   getAllOrders,
   placeOrderStatus,
   deletedRejectedOrder,
+  getMyCompanySales,
 };
 
 module.exports = orderController;

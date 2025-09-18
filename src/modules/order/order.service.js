@@ -136,16 +136,8 @@ const getAllOrders = async (page = 1, limit = 10) => {
   const [orders, total] = await Promise.all([
     Order.find()
       .populate({
-        path: "employeeId",
+        path: "employee",
         select: "name employeeId",
-      })
-      .populate({
-        path: "productId",
-        select: "title price",
-      })
-      .populate({
-        path: "shopId",
-        select: "companyName companyId",
       })
       .skip(skip)
       .limit(limit)
@@ -201,6 +193,83 @@ const deletedRejectedOrder = async (orderId) => {
   if (!result) throw new Error("Order not found.");
 };
 
+const getMyCompanySales = async (
+  email,
+  page = 1,
+  limit = 10,
+  searchEmployeeId = null
+) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found.");
+
+
+  const shop = await Shop.findById(user.shop);
+  if (!shop) throw new Error("Shop not found.");
+
+
+  const query = { shop: shop._id };
+  if (searchEmployeeId) {
+
+    const employee = await Employee.findOne({ employeeId: searchEmployeeId });
+    if (!employee) throw new Error("Employee not found.");
+
+    query.employee = employee._id; 
+  }
+
+  const skip = (page - 1) * limit;
+  const [orders, totalOrders] = await Promise.all([
+    Order.find(query)
+      .populate("employee", "employeeId name email")
+      .skip(skip)
+      .limit(limit),
+    Order.countDocuments(query),
+  ]);
+
+
+  const productSales = {};
+  let totalUserCoin = 0;
+
+  orders.forEach((order) => {
+    totalUserCoin += order.totalPayCoin || 0;
+
+    order.items.forEach((item) => {
+      if (!productSales[item.title]) {
+        productSales[item.title] = {
+          productName: item.title,
+          quantity: 0,
+          coins: 0,
+          image: item.image || null,
+          employees: [],
+        };
+      }
+
+      productSales[item.title].quantity += item.quantity;
+      productSales[item.title].coins += item.totalCoin;
+
+      if (order.employee) {
+        productSales[item.title].employees.push({
+          employeeId: order.employee.employeeId,
+          name: order.employee.name,
+          email: order.employee.email,
+        });
+      }
+    });
+  });
+
+  return {
+    pagination: {
+      totalOrders,
+      currentPage: page,
+      totalPages: Math.ceil(totalOrders / limit),
+      limit,
+    },
+    totalProducts: Object.keys(productSales).length,
+    totalUserCoin,
+    data: Object.values(productSales),
+  };
+};
+
+
 const orderService = {
   orderProduct,
   getMyOrders,
@@ -208,6 +277,7 @@ const orderService = {
   getAllOrders,
   placeOrderStatus,
   deletedRejectedOrder,
+  getMyCompanySales,
 };
 
 module.exports = orderService;
