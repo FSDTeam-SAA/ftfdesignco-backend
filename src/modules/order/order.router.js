@@ -26,6 +26,12 @@ router.get(
   orderController.getMyCompanySales
 );
 
+router.get(
+  "/sales-summary",
+  auth(USER_ROLE.company_admin),
+  orderController.getSalesSummary
+);
+
 router.put(
   "/status/:orderId",
   // auth(USER_ROLE.company_admin),
