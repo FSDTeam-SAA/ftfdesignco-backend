@@ -81,7 +81,7 @@ const getAllOrders = async (req, res) => {
       success: true,
       code: 200,
       message: "Orders fetched successfully",
-      data: result,
+      data: result.orders,
       meta: {
         total: result.total,
         page: result.page,
