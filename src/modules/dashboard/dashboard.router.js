@@ -29,5 +29,29 @@ router.get(
   dashboardController.productSellCategoryReportChart
 );
 
+router.get(
+  "/admin-summary",
+  //   auth(USER_ROLE.admin),
+  dashboardController.getAdminDashboardSummary
+);
+
+router.get(
+  "/admin-new-products-report",
+  //   auth(USER_ROLE.admin),
+  dashboardController.adminTotalNewProductsReport
+);
+
+router.get(
+  "/admin-sell-category-report",
+  //   auth(USER_ROLE.admin),
+  dashboardController.productSellCategoryReportChartForAdmin
+);
+
+router.get(
+  "/admin-revenue-report",
+  //   auth(USER_ROLE.admin),
+  dashboardController.revenueReportChartForAdmin
+);
+
 const dashboardRouter = router;
 module.exports = dashboardRouter;
