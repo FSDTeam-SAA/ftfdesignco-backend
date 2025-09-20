@@ -1,5 +1,6 @@
 const AssignedProduct = require("../assignedProduct/assignedProduct.model");
 const Order = require("../order/order.model");
+const Product = require("../product/product.model");
 const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
 
@@ -114,11 +115,142 @@ const companyUseCoinReportChart = async (req, res) => {
   }
 };
 
-const newProductsReportChart = async (req, res) => {};
+const newProductsReportChart = async (req, res) => {
+  try {
+    const { userId } = req.user;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const shopData = await Shop.findOne({ userId: userId });
+    if (!shopData) {
+      throw new Error("Shop not found");
+    }
+
+    // Define time ranges
+    const now = new Date();
+    const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+    const startOfWeek = new Date();
+    startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday as start of week
+    startOfWeek.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Aggregate data
+    const [todayCount, weekCount, monthCount] = await Promise.all([
+      AssignedProduct.countDocuments({
+        shopId: shopData._id,
+        createdAt: { $gte: startOfDay },
+      }),
+      AssignedProduct.countDocuments({
+        shopId: shopData._id,
+        createdAt: { $gte: startOfWeek },
+      }),
+      AssignedProduct.countDocuments({
+        shopId: shopData._id,
+        createdAt: { $gte: startOfMonth },
+      }),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Total new products report fetched successfully",
+      data: {
+        today: todayCount,
+        thisWeek: weekCount,
+        thisMonth: monthCount,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const productSellCategoryReportChart = async (req, res) => {
+  try {
+    const { userId } = req.user;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const shopData = await Shop.findOne({ userId: userId });
+    if (!shopData) {
+      throw new Error("Shop not found");
+    }
+
+    // Fetch approved orders for this shop
+    const orders = await Order.find({
+      shop: shopData._id,
+      status: "approved",
+    }).populate("items.productId");
+
+    // if (!orders.length) {
+    //   return res.status(200).json({
+    //     success: true,
+    //     message: "No sales data found",
+    //     data: [],
+    //   });
+    // }
+
+    // Count sales per category
+    const categorySales = {};
+
+    for (const order of orders) {
+      for (const item of order.items) {
+        const product = await Product.findById(item.productId).populate(
+          "category"
+        );
+        if (product && product.category) {
+          const categoryId = product.category._id.toString();
+          if (!categorySales[categoryId]) {
+            categorySales[categoryId] = {
+              categoryName: product.category.title,
+              totalQuantity: 0,
+            };
+          }
+          categorySales[categoryId].totalQuantity += item.quantity;
+        }
+      }
+    }
+
+    // Convert to array
+    const categoryArray = Object.values(categorySales);
+
+    // Calculate total
+    const totalQuantity = categoryArray.reduce(
+      (sum, c) => sum + c.totalQuantity,
+      0
+    );
+
+    // Add percentage
+    const finalResult = categoryArray.map((c) => ({
+      category: c.categoryName,
+      percentage: ((c.totalQuantity / totalQuantity) * 100).toFixed(2) + "%",
+    }));
+
+    return res.status(200).json({
+      success: true,
+      message: "Product sell category report fetched successfully",
+      data: finalResult,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 const dashboardController = {
   companyDashboardSummary,
   companyUseCoinReportChart,
   newProductsReportChart,
+  productSellCategoryReportChart,
 };
 module.exports = dashboardController;
