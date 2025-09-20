@@ -139,6 +139,8 @@ const getAllOrders = async (page = 1, limit = 10) => {
   // Get approved orders
   const orders = await Order.find({ status: "approved" })
     .populate("shop", "companyName")
+    .populate("employee", "name email")
+    .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit);
 
@@ -165,7 +167,6 @@ const getAllOrders = async (page = 1, limit = 10) => {
     totalPages: Math.ceil(total / limit),
   };
 };
-
 
 const placeOrderStatus = async (orderId, payload) => {
   const { status } = payload;

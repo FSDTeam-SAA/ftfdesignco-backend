@@ -114,8 +114,11 @@ const companyUseCoinReportChart = async (req, res) => {
   }
 };
 
+const newProductsReportChart = async (req, res) => {};
+
 const dashboardController = {
   companyDashboardSummary,
   companyUseCoinReportChart,
+  newProductsReportChart,
 };
 module.exports = dashboardController;
