@@ -1,5 +1,6 @@
 const AssignedProduct = require("../assignedProduct/assignedProduct.model");
 const Order = require("../order/order.model");
+const { Payment } = require("../payment/payment.model");
 const Product = require("../product/product.model");
 const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
@@ -247,10 +248,46 @@ const productSellCategoryReportChart = async (req, res) => {
   }
 };
 
+const getAdminDashboardSummary = async (req, res) => {
+  try {
+    const totalLiveProducts = await Product.countDocuments();
+    const totalCompanies = await Shop.countDocuments({ status: "approved" });
+    const totalProductRequests = await AssignedProduct.countDocuments({
+      status: "pending",
+    });
+    const liveProducts = await Product.countDocuments();
+    const companyRequests = await Shop.countDocuments({ status: "pending" });
+    const payments = await Payment.find({
+      status: "success",
+      type: "payOrder",
+    });
+    const totalRevenue = payments.reduce((acc, p) => acc + p.amount, 0);
+
+    return res.status(200).json({
+      success: true,
+      message: "Admin dashboard summary fetched successfully",
+      data: {
+        totalRevenue,
+        totalLiveProducts,
+        totalCompanies,
+        totalProductRequests,
+        liveProducts,
+        companyRequests,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 const dashboardController = {
   companyDashboardSummary,
   companyUseCoinReportChart,
   newProductsReportChart,
   productSellCategoryReportChart,
+  getAdminDashboardSummary,
 };
 module.exports = dashboardController;

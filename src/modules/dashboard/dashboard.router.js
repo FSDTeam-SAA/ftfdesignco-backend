@@ -29,5 +29,11 @@ router.get(
   dashboardController.productSellCategoryReportChart
 );
 
+router.get(
+  "/admin-summary",
+//   auth(USER_ROLE.admin),
+  dashboardController.getAdminDashboardSummary
+);
+
 const dashboardRouter = router;
 module.exports = dashboardRouter;
