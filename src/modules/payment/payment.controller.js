@@ -4,6 +4,7 @@ const { Payment } = require("../payment/payment.model");
 const User = require("../user/user.model");
 const Shop = require("../shop/shop.model");
 const SubscriptionPlan = require("../subscriptionPlan/subscriptionPlan.model");
+const Order = require("../order/order.model");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2025-05-28.basil",
@@ -230,13 +231,81 @@ const confirmPayment = async (req, res) => {
 };
 
 const getAdminWallet = async (req, res) => {
-  const { userId } = req.user;
-  const user = await User.findById(userId);
-  if (!user) return res.status(404).json({ error: "User not found" });
+  try {
+    const { userId } = req.user;
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
 
-  
+    // 1. Get all successful payments
+    const payments = await Payment.find({
+      status: "success",
+      type: "payOrder",
+    }).populate("shopId", "companyName");
 
+    // 2. Calculate total revenue
+    const totalRevenue = payments.reduce((acc, p) => acc + p.amount, 0);
 
+    // 3. Find related orders for these shops
+    const shopIds = payments.map((p) => p.shopId._id);
+    const orders = await Order.find({
+      shop: { $in: shopIds },
+      status: "approved",
+    }).populate("shop", "companyName");
+
+    // 4. Collect product stats
+    const productStats = {};
+
+    orders.forEach((order) => {
+      order.items.forEach((item) => {
+        const key = item.productId.toString();
+        if (!productStats[key]) {
+          productStats[key] = {
+            title: item.title,
+            totalQuantity: 0,
+            totalCoin: 0,
+            companyName: order.shop.companyName,
+          };
+        }
+        productStats[key].totalQuantity += item.quantity;
+        productStats[key].totalCoin += item.totalCoin;
+      });
+    });
+
+    // 5. Format products
+    const products = Object.values(productStats);
+
+    // 6. Payment history with date/time
+    const paymentHistory = payments.map((p) => ({
+      companyName: p.shopId.companyName,
+      amount: p.amount,
+      createdAt: p.createdAt, // raw Date
+      createdAtFormatted: p.createdAt.toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }), // formatted
+      transactionId: p.transactionId,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      message: "Admin wallet fetched successfully",
+      data: {
+        totalRevenue,
+        products,
+        paymentHistory,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 module.exports = {

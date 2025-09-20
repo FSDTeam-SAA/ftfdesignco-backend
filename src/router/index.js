@@ -14,6 +14,7 @@ const { path } = require("../app");
 const orderRouter = require("../modules/order/order.router");
 const newsLetterRouter = require("../modules/newsLetter/newsLetter.routes");
 const cartRouter = require("../modules/cart/cart.router");
+const dashboardRouter = require("../modules/dashboard/dashboard.router");
 
 const router = Router();
 
@@ -73,6 +74,10 @@ const moduleRouter = [
   {
     path: "/cart",
     router: cartRouter,
+  },
+  {
+    path: "/dashboard",
+    router: dashboardRouter,
   },
 ];
 
