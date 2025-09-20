@@ -134,7 +134,7 @@ const getAllOrders = async (page = 1, limit = 10) => {
   page = parseInt(page);
   limit = parseInt(limit);
 
-  const total = await Order.countDocuments();
+  const total = await Order.countDocuments({ status: "approved" });
 
   // Get approved orders
   const orders = await Order.find({ status: "approved" })
