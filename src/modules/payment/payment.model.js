@@ -23,6 +23,11 @@ const paymentSchema = new mongoose.Schema(
       enum: ["pending", "success", "failed"],
       default: "pending",
     },
+    type: {
+      type: String,
+      enum: ["subscription", "payOrder"],
+      required: true,
+    },
   },
   { timestamps: true, versionKey: false }
 );
