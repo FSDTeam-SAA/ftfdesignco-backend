@@ -17,5 +17,17 @@ router.get(
   dashboardController.companyUseCoinReportChart
 );
 
+router.get(
+  "/new-products-report",
+  auth(USER_ROLE.company_admin),
+  dashboardController.newProductsReportChart
+);
+
+router.get(
+  "/sell-category-report",
+  auth(USER_ROLE.company_admin),
+  dashboardController.productSellCategoryReportChart
+);
+
 const dashboardRouter = router;
 module.exports = dashboardRouter;
