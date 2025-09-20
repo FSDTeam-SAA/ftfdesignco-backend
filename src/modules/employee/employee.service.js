@@ -20,7 +20,6 @@ const createEmployeeInDb = async (email, payload) => {
 
   const shop = await Shop.findById(user.shop);
   if (!shop) throw new Error("Shop not found.");
-  console.log(shop);
 
   if (!shop.status === "approved") {
     throw new Error("Shop is not approved yet.");

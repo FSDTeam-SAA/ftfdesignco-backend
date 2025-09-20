@@ -314,6 +314,7 @@ exports.addProductToShop = async (req, res) => {
       productId: product._id,
       userId: user._id,
       shopId: shop._id,
+      status: "approved",
     });
 
     if (isAlreadyExist) {

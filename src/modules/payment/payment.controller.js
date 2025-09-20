@@ -229,7 +229,18 @@ const confirmPayment = async (req, res) => {
   }
 };
 
+const getAdminWallet = async (req, res) => {
+  const { userId } = req.user;
+  const user = await User.findById(userId);
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  
+
+
+};
+
 module.exports = {
   createPayment,
   confirmPayment,
+  getAdminWallet,
 };

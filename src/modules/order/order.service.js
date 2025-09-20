@@ -1,4 +1,5 @@
 const Employee = require("../employee/employee.model");
+const { Payment } = require("../payment/payment.model");
 const Product = require("../product/product.model");
 const Shop = require("../shop/shop.model");
 const User = require("../user/user.model");
@@ -135,22 +136,36 @@ const getAllOrders = async (page = 1, limit = 10) => {
 
   const total = await Order.countDocuments();
 
-  const orders = await Order.find()
+  // Get approved orders
+  const orders = await Order.find({ status: "approved" })
     .populate("shop", "companyName")
     .skip((page - 1) * limit)
     .limit(limit);
 
-  // Calculate total pages
-  const totalPages = Math.ceil(total / limit);
+  // Get successful payments for all shops in these orders
+  const payments = await Payment.find({
+    shopId: { $in: orders.map((o) => o.shop._id) },
+    status: "success",
+  });
+
+  // Create a lookup for shops that have successful payment
+  const paidShops = new Set(payments.map((p) => p.shopId.toString()));
+
+  // Attach payment status to each order
+  const enrichedOrders = orders.map((order) => ({
+    ...order.toObject(),
+    paymentStatus: paidShops.has(order.shop._id.toString()) ? "paid" : "unpaid",
+  }));
 
   return {
-    orders,
+    orders: enrichedOrders,
     total,
     page,
     limit,
-    totalPages,
+    totalPages: Math.ceil(total / limit),
   };
 };
+
 
 const placeOrderStatus = async (orderId, payload) => {
   const { status } = payload;
@@ -202,7 +217,8 @@ const getMyCompanySales = async (
   const shop = await Shop.findById(user.shop);
   if (!shop) throw new Error("Shop not found.");
 
-  const query = { shop: shop._id, status: "delivered" };
+  //! check this logic again.......................................
+  const query = { shop: shop._id, status: "approved" };
 
   if (searchEmployeeId) {
     const employee = await Employee.findOne({ employeeId: searchEmployeeId });
