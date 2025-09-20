@@ -255,7 +255,7 @@ const getAdminDashboardSummary = async (req, res) => {
     const totalProductRequests = await AssignedProduct.countDocuments({
       status: "pending",
     });
-    const liveProducts = await Product.countDocuments();
+    // const liveProducts = await Product.countDocuments();
     const companyRequests = await Shop.countDocuments({ status: "pending" });
     const payments = await Payment.find({
       status: "success",
@@ -271,7 +271,7 @@ const getAdminDashboardSummary = async (req, res) => {
         totalLiveProducts,
         totalCompanies,
         totalProductRequests,
-        liveProducts,
+        // liveProducts,
         companyRequests,
       },
     });
