@@ -285,56 +285,74 @@ const getAdminDashboardSummary = async (req, res) => {
 
 const adminTotalNewProductsReport = async (req, res) => {
   try {
-    const { filterBy = "monthly" } = req.query;
-
+    const { filterBy } = req.query;
     const now = new Date();
-    let startDate;
 
-    switch (filterBy.toLowerCase()) {
-      case "daily":
-      case "day":
-        startDate = new Date(now.setHours(0, 0, 0, 0));
-        break;
+    // Start dates
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
-      case "weekly":
-      case "week":
-        startDate = new Date();
-        startDate.setDate(now.getDate() - now.getDay()); // start of week (Sunday)
-        startDate.setHours(0, 0, 0, 0);
-        break;
+    const startOfWeek = new Date();
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
 
-      case "monthly":
-      case "month":
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      case "yearly":
-      case "year":
-        startDate = new Date(now.getFullYear(), 0, 1);
-        break;
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
 
-      default:
-        return res.status(400).json({
-          success: false,
-          message: "Invalid filterBy value. Use: day, week, month, or year.",
-        });
+    if (filterBy) {
+      let startDate;
+
+      switch (filterBy.toLowerCase()) {
+        case "daily":
+          startDate = startOfDay;
+          break;
+        case "weekly":
+          startDate = startOfWeek;
+          break;
+        case "monthly":
+          startDate = startOfMonth;
+          break;
+        case "yearly":
+          startDate = startOfYear;
+          break;
+        default:
+          return res.status(400).json({
+            success: false,
+            message:
+              "Invalid filterBy value. Use: daily, weekly, monthly, or yearly.",
+          });
+      }
+
+      const total = await Product.countDocuments({
+        createdAt: { $gte: startDate },
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: `Admin total new products report fetched successfully (${filterBy})`,
+        data: {
+          filterBy,
+          total,
+          startDate,
+          endDate: new Date(),
+        },
+      });
+    } else {
+      // Overview mode → all at once
+      const [day, week, month, year] = await Promise.all([
+        Product.countDocuments({ createdAt: { $gte: startOfDay } }),
+        Product.countDocuments({ createdAt: { $gte: startOfWeek } }),
+        Product.countDocuments({ createdAt: { $gte: startOfMonth } }),
+        Product.countDocuments({ createdAt: { $gte: startOfYear } }),
+      ]);
+
+      return res.status(200).json({
+        success: true,
+        message: "Admin total new products report fetched successfully (all)",
+        data: { day, week, month, year },
+      });
     }
-
-    // Count new assigned products from startDate until now
-    const totalNewProducts = await Product.countDocuments({
-      createdAt: { $gte: startDate },
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: `Admin total new products report fetched successfully (${filterBy})`,
-      data: {
-        filterBy,
-        total: totalNewProducts,
-        startDate,
-        endDate: new Date(),
-      },
-    });
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -342,6 +360,7 @@ const adminTotalNewProductsReport = async (req, res) => {
     });
   }
 };
+
 
 const productSellCategoryReportChartForAdmin = async (req, res) => {
   try {
