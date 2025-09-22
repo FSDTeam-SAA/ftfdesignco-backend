@@ -349,7 +349,7 @@ const adminTotalNewProductsReport = async (req, res) => {
 
       return res.status(200).json({
         success: true,
-        message: "Admin total new products report fetched successfully (all)",
+        message: "Admin total new products report fetched successfully",
         data: { day, week, month, year },
       });
     }
@@ -360,7 +360,6 @@ const adminTotalNewProductsReport = async (req, res) => {
     });
   }
 };
-
 
 const productSellCategoryReportChartForAdmin = async (req, res) => {
   try {

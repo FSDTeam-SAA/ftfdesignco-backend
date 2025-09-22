@@ -10,7 +10,7 @@ const crateShopInDb = async (payload, email, files) => {
   if (!user.isVerified)
     throw new Error("Please verify your email address first");
 
-  if (user.isShopCreated) throw new Error("Shop already created");
+  if (user.isShopCreated === true) throw new Error("Shop already created");
   // if (user.isPaid === false) throw new Error("Please buy a subscription");
 
   const isShopExist = await Shop.findOne({
