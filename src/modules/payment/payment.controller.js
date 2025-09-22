@@ -17,6 +17,10 @@ const createPayment = async (req, res) => {
   const user = await User.findById(userId);
   if (!user) return res.status(404).json({ error: "User not found" });
 
+  if (user.isShopCreated === false) {
+    throw new Error("Shop not created. Please create a shop first.");
+  }
+
   let amount = 0;
   if (type === "subscription") {
     const plan = await SubscriptionPlan.findById(planId);
@@ -59,8 +63,7 @@ const createPayment = async (req, res) => {
       message: "PaymentIntent created.",
     });
   } catch (error) {
-    console.error("Error creating PaymentIntent:", error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 

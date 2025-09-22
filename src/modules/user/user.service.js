@@ -108,7 +108,6 @@ const verifyUserEmail = async (payload, email) => {
 
 const resendOtpCode = async ({ email }) => {
   const existingUser = await User.findOne({ email });
-  console.log(existingUser);
   if (!existingUser) throw new Error("User not found");
 
   if (existingUser.isVerified) {
