@@ -37,7 +37,7 @@ router.get(
 
 router.get(
   "/admin-new-products-report",
-    // auth(USER_ROLE.admin),
+    auth(USER_ROLE.admin),
   dashboardController.adminTotalNewProductsReport
 );
 
