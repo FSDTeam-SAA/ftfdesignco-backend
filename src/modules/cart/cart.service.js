@@ -70,7 +70,7 @@ const getMyOwnCart = async (employeeId, page, limit) => {
     paginatedCart.map(async (item) => {
       const product = await Product.findById(
         new mongoose.Types.ObjectId(item.productId)
-      ).select("title price");
+      ).select("title price productImage");
 
       return {
         ...item,
