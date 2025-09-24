@@ -56,7 +56,7 @@ router.put(
 
 router.delete(
   "/cancel/:assignedProductId",
-  // auth(USER_ROLE.company_admin),
+  auth(USER_ROLE.company_admin),
   assignedProductController.deletedRejectedAssignedProduct
 );
 
