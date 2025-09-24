@@ -1,3 +1,6 @@
+const { Payment } = require("../payment/payment.model");
+const Shop = require("../shop/shop.model");
+const User = require("../user/user.model");
 const SubscriptionPlan = require("./subscriptionPlan.model");
 
 exports.createPlan = async (req, res) => {
@@ -125,6 +128,45 @@ exports.deletePlan = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Plan deleted successfully",
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.getMySubscription = async (req, res) => {
+  try {
+    const { email } = req.user;
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const shop = await Shop.findOne({ userId: user._id });
+    if (!shop) {
+      throw new Error("You don't have a shop yet");
+    }
+
+    const result = await Payment.findOne({
+      userId: user._id,
+      status: "success",
+      type: "subscription",
+    })
+      .sort({ createdAt: -1 })
+      .populate("planId")
+      .select("-__v -createdAt -updatedAt -transactionId");
+
+    // Merge subscription info from shop into the result
+    const subscriptionData = {
+      ...result?._doc, // spread Payment fields
+      subscriptionStartDate: shop.subscriptionStartDate,
+      subscriptionEndDate: shop.subscriptionEndDate,
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "Subscription retrieved successfully",
+      data: subscriptionData,
     });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
