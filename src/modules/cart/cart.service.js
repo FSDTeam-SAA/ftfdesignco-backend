@@ -131,17 +131,38 @@ const incrementQuantity = async (cartId, employeeId) => {
     throw new Error("Cart item not found.");
   }
 
+  // check stock from Product
   const product = await Product.findById(cartEntry.productId);
   if (!product) {
     throw new Error("Product not found.");
   }
 
-  if (cartEntry.quantity >= product.quantity) {
+  if (Number(cartEntry.quantity) >= Number(product.quantity)) {
     throw new Error("Not enough stock available to increase quantity.");
   }
 
-  const newQuantity = cartEntry.quantity + 1;
-  const newTotalCoin = newQuantity * product.price;
+  // get coin from AssignedProduct
+  const assignedProduct = await AssignedProduct.findOne({
+    productId: cartEntry.productId,
+  });
+  if (!assignedProduct) {
+    throw new Error("Assigned product not found.");
+  }
+
+  if (!assignedProduct.status === "approved") {
+    throw new Error("Product is not approved yet");
+  }
+
+  if (!assignedProduct.coin === 0) {
+    throw new Error("Assigned product has no coin value.");
+  }
+
+  const quantity = Number(cartEntry.quantity) || 0;
+  const coin = Number(assignedProduct.coin) || 0;
+
+
+  const newQuantity = quantity + 1;
+  const newTotalCoin = newQuantity * coin;
 
   const result = await Employee.findOneAndUpdate(
     { employeeId },
@@ -173,17 +194,29 @@ const decrementQuantity = async (cartId, employeeId) => {
     throw new Error("Cart item not found.");
   }
 
+  // Check stock and validity from Product
   const product = await Product.findById(cartEntry.productId);
   if (!product) {
     throw new Error("Product not found.");
   }
 
-  if (cartEntry.quantity <= 1) {
+  if (Number(cartEntry.quantity) <= 1) {
     throw new Error("Quantity cannot be less than 1.");
   }
 
-  const newQuantity = cartEntry.quantity - 1;
-  const newTotalCoin = newQuantity * product.price;
+  // Get coin from AssignedProduct
+  const assignedProduct = await AssignedProduct.findOne({
+    productId: cartEntry.productId,
+  });
+  if (!assignedProduct) {
+    throw new Error("Assigned product not found.");
+  }
+
+  const quantity = Number(cartEntry.quantity) || 0;
+  const coin = Number(assignedProduct.coin) || 0;
+
+  const newQuantity = quantity - 1;
+  const newTotalCoin = newQuantity * coin;
 
   const updatedEmployee = await Employee.findOneAndUpdate(
     { employeeId },
@@ -198,6 +231,7 @@ const decrementQuantity = async (cartId, employeeId) => {
 
   return updatedEmployee;
 };
+
 
 const cartService = {
   addToCart,
