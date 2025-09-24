@@ -117,7 +117,8 @@ const getAllOrdersFromShop = async (email, page = 1, limit = 10) => {
   const orders = await Order.find({ shop: shop._id })
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
-    .limit(limit);
+    .limit(limit)
+    .populate("employee", "employeeId");
 
   return {
     data: orders,
@@ -287,39 +288,19 @@ const getMyCompanySales = async (
   };
 };
 
-//! this api will remove i think_________________________________________
-const getSalesSummary = async (email) => {
-  const user = await User.findOne({ email });
-  if (!user) throw new Error("User not found.");
 
-  const shop = await Shop.findById(user.shop);
-  if (!shop) throw new Error("Shop not found.");
 
-  const orders = await Order.find({ shop: shop._id, status: "delivered" });
 
-  if (orders.length === 0) {
-    return res.status(400).json({ success: false, message: "No orders found" });
-  }
 
-  const totalProductPrice = orders.reduce(
-    (acc, o) =>
-      acc + o.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    0
-  );
 
-  const paymentSuccess = true;
 
-  if (paymentSuccess) {
-    await Order.updateMany(
-      { shop: shop._id, status: "delivered" },
-      { $set: { status: "paid" } }
-    );
-  }
 
-  return {
-    totalPaid: totalProductPrice,
-  };
-};
+
+
+
+
+
+
 
 const orderService = {
   orderProduct,
@@ -329,7 +310,7 @@ const orderService = {
   placeOrderStatus,
   deletedRejectedOrder,
   getMyCompanySales,
-  getSalesSummary,
+
 };
 
 module.exports = orderService;

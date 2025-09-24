@@ -292,6 +292,7 @@ const getAdminWallet = async (req, res) => {
         minute: "2-digit",
       }), // formatted
       transactionId: p.transactionId,
+      status: p.status,
     }));
 
     return res.status(200).json({
