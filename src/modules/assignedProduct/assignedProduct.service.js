@@ -38,6 +38,40 @@ const getAssignedProductForUser = async (employeeId, page = 1, limit = 10) => {
   };
 };
 
+const getRequestAssignedProducts = async (page = 1, limit = 10) => {
+  page = Math.max(1, parseInt(page));
+  limit = Math.max(1, parseInt(limit));
+  const skip = (page - 1) * limit;
+  const total = await AssignedProduct.countDocuments();
+
+  const products = await AssignedProduct.find()
+    .populate({
+      path: "productId",
+      select: "title category price image quantity",
+    })
+    .populate({
+      path: "shopId",
+      select: "companyName companyAddress",
+    })
+    .populate({
+      path: "userId",
+      select: "name email",
+    })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  return {
+    data: products,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
 const getMyShopAssigndedProducts = async (
   email,
   { categoryName, minCoin, page, limit }
@@ -291,6 +325,20 @@ const cancelMyShopProduct = async (assignedProductId, email) => {
   return result;
 };
 
+const deletedRejectedAssignedProduct = async (assignedProductId) => {
+  const assignedProduct = await AssignedProduct.findById(assignedProductId);
+  if (!assignedProduct) throw new Error("Assigned product not found");
+
+  if (!assignedProduct.status === "cancelled") {
+    throw new Error("Only cancelled products can be deleted");
+  }
+
+  await AssignedProduct.findOneAndDelete({
+    _id: assignedProductId,
+    status: "cancelled",
+  });
+};
+
 const assignedProductService = {
   getAssignedProductForUser,
   getMyShopAssigndedProducts,
@@ -299,6 +347,8 @@ const assignedProductService = {
   setCoinForProducts,
   getMyShopApprovedProducts,
   cancelMyShopProduct,
+  getRequestAssignedProducts,
+  deletedRejectedAssignedProduct,
 };
 
 module.exports = assignedProductService;

@@ -5,7 +5,7 @@ const getAssignedProducts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
-    const result = await assignedProductService.getAssignedProductForUser(
+    const result = await assignedProductService.getRequestAssignedProducts(
       page,
       limit
     );
@@ -196,6 +196,26 @@ const cancelMyShopProduct = async (req, res) => {
   }
 };
 
+const deletedRejectedAssignedProduct = async (req, res) => {
+  try {
+    const { assignedProductId } = req.params;
+
+    await assignedProductService.deletedRejectedAssignedProduct(
+      assignedProductId
+    );
+
+    return res.status(200).json({
+      success: true,
+      code: 200,
+      message: "Product deleted successfully",
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, code: 500, message: error.message });
+  }
+};
+
 const assignedProductController = {
   getAssignedProducts,
   getMyShopAssigndedProducts,
@@ -205,5 +225,6 @@ const assignedProductController = {
   getMyShopApprovedProducts,
   getAssignedProductForUser,
   cancelMyShopProduct,
+  deletedRejectedAssignedProduct,
 };
 module.exports = assignedProductController;
