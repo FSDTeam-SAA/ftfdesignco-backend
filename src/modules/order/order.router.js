@@ -34,7 +34,7 @@ router.put(
 
 router.delete(
   "/remove-rejected-order/:orderId",
-  auth(USER_ROLE.company_admin, USER_ROLE.employee),
+  auth(USER_ROLE.company_admin),
   orderController.deletedRejectedOrder
 );
 

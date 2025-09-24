@@ -288,20 +288,6 @@ const getMyCompanySales = async (
   };
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const orderService = {
   orderProduct,
   getMyOrders,
