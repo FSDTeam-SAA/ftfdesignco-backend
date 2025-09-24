@@ -54,5 +54,11 @@ router.put(
   assignedProductController.cancelMyShopProduct
 );
 
+router.delete(
+  "/cancel/:assignedProductId",
+  // auth(USER_ROLE.company_admin),
+  assignedProductController.deletedRejectedAssignedProduct
+);
+
 const assignedProduct = router;
 module.exports = assignedProduct;
