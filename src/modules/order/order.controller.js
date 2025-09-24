@@ -29,7 +29,7 @@ const getMyOrder = async (req, res) => {
     return res.status(200).json({
       success: true,
       code: 200,
-      message: "Orders fetched successfully",
+      message: "Orders fetched successfully!",
       data: result.data,
       pagination: result.pagination,
     });
